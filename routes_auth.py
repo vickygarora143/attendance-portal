@@ -38,6 +38,9 @@ def change_password():
 
 @bp.route("/login", methods=["GET", "POST"])
 def login():
+    # already logged in? straight to the home page
+    if current_user():
+        return redirect(url_for("auth.home"))
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")

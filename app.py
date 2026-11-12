@@ -78,6 +78,15 @@ def create_app():
         return redirect(url_for("auth.home"))
 
     @app.after_request
+    def no_cache_html(response):
+        """Never let the browser show a logged-in page after logout (back/refresh)."""
+        if response.mimetype in ("text/html",):
+            response.headers["Cache-Control"] = "no-store, must-revalidate"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+        return response
+
+    @app.after_request
     def lite_gzip(response):
         """Compress text responses — portal stays usable on slow internet."""
         if (response.direct_passthrough or response.status_code != 200

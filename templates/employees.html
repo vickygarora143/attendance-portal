@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>👥 Employees <a class="btn sm" style="float:right" href="{{ url_for('admin.employees_import') }}">📥 Import from Excel</a> <a class="btn sm green" style="float:right" href="{{ url_for('admin.employee_form') }}">+ Add Employee</a></h1>
+<div class="card">
+  <table>
+    <tr><th>Emp ID</th><th>Name</th><th>Designation</th><th>Zone</th><th>DOJ</th><th>Gross</th><th>On device</th><th>Status</th><th></th></tr>
+    {% for e in emps %}
+      <tr><td>{{ e.emp_id }}</td><td>{{ e.name }}</td><td>{{ e.designation or '-' }}</td>
+        <td>{{ e.zone or '-' }}</td><td>{{ e.doj or '-' }}</td><td>{{ e.gross or '-' }}</td>
+        <td>{{ '✓' if e.device_enrolled else '✗' }}</td><td>{{ e.status }}</td>
+        <td><a class="btn sm" href="{{ url_for('admin.employee_form', eid=e.id) }}">Edit</a>
+            <a class="btn sm grey" href="{{ url_for('admin.attendance_edit', eid=e.id) }}">Attendance</a></td></tr>
+    {% else %}<tr><td colspan="9" class="muted">No employees yet — run the seed script or use Add Employee.</td></tr>{% endfor %}
+  </table>
+</div>
+{% endblock %}

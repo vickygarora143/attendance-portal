@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1e2a4a">
+<title>Attendance Portal</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head><body>
+<nav>
+  <span class="brand">📅 Attendance Portal</span>
+  {% set u = g.u %}
+  {% if u %}
+    {% if u.role == 'super_admin' %}
+      <a href="{{ url_for('super.home') }}">🏢 Offices</a>
+      <a href="{{ url_for('super.users') }}">👤 Users</a>
+      <a href="{{ url_for('super.audit_log') }}">🧾 Audit</a>
+    {% endif %}
+    {% if u.role in ('admin', 'super_admin') %}
+      <a href="{{ url_for('admin.dashboard') }}">🏠 Dashboard</a>
+      <a href="{{ url_for('admin.upload') }}">⬆️ Upload</a>
+      <a href="{{ url_for('admin.requests') }}">📝 Requests {% if g.pend %}<span class="badge">{{ g.pend }}</span>{% endif %}</a>
+      <a href="{{ url_for('admin.employees') }}">👥 Employees</a>
+      <a href="{{ url_for('admin.salary') }}">💰 Salary</a>
+      <a href="{{ url_for('admin.holidays') }}">🎄 Holidays</a>
+      <a href="{{ url_for('admin.report') }}">📊 Report</a>
+    {% endif %}
+    {% if u.role == 'agent' %}
+      <a href="{{ url_for('agent.my_attendance') }}">📋 My Attendance</a>
+      <a href="{{ url_for('agent.my_requests') }}">📨 My Requests</a>
+    {% endif %}
+    <span class="right"><span class="who">{{ u.username }} · {{ u.role.replace('_',' ') }}</span>
+      <a href="{{ url_for('auth.logout') }}">Logout →</a></span>
+  {% endif %}
+</nav>
+<div class="container">
+  {% with msgs = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in msgs %}<div class="flash {{ cat }}">{{ msg }}</div>{% endfor %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</div>
+<footer>Lite mode · no heavy assets · works on slow internet</footer>
+</body></html>

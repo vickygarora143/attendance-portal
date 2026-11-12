@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>📨 My Requests</h1>
+<div class="card">
+  <table>
+    <tr><th>Date</th><th>Type</th><th>Reason</th><th>Status</th><th>Admin remark</th><th>Submitted</th></tr>
+    {% for r in reqs %}
+      <tr><td>{{ r.adate.strftime('%d-%b-%Y') }}</td><td>{{ rtypes.get(r.rtype, r.rtype) }}</td>
+        <td>{{ r.reason }}</td>
+        <td><span class="tag status-{{ r.status|upper }}">{{ r.status }}</span></td>
+        <td>{{ r.admin_remark or '-' }}</td>
+        <td>{{ r.created_at.strftime('%d-%b %H:%M') }}</td></tr>
+    {% else %}<tr><td colspan="6" class="muted">No requests yet.</td></tr>{% endfor %}
+  </table>
+</div>
+{% endblock %}

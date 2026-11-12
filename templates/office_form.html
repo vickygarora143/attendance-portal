@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ 'Edit' if off else 'Add' }} Office</h1>
+<div class="card" style="max-width:640px">
+  <form method="post">
+    <div class="form-row">
+      <div><label>Code *</label><input name="code" value="{{ off.code if off }}" required placeholder="MOHALI"></div>
+      <div><label>Name *</label><input name="name" value="{{ off.name if off }}" required placeholder="Mohali Office"></div>
+    </div>
+    <h2>Attendance rules (applied live in the report)</h2>
+    <div class="form-row">
+      <div><label>Late after (minutes from midnight)</label>
+        <input type="number" name="late_after" value="{{ off.late_after if off else 615 }}">
+        <div class="muted">615 = 10:15</div></div>
+      <div><label>Half-day from (minutes)</label>
+        <input type="number" name="hd_from" value="{{ off.hd_from if off else 810 }}">
+        <div class="muted">810 = 13:30</div></div>
+    </div>
+    <div class="form-row">
+      <div><label>Late waiver (first N = Present)</label>
+        <input type="number" name="waiver" value="{{ off.waiver if off else 4 }}"></div>
+      <div><label>Suspect punch after (minutes)</label>
+        <input type="number" name="suspect_from" value="{{ off.suspect_from if off else 960 }}">
+        <div class="muted">960 = 16:00</div></div>
+    </div>
+    <br><button class="btn green">💾 Save Office</button>
+    <a class="btn grey" href="{{ url_for('super.home') }}">Cancel</a>
+  </form>
+</div>
+{% endblock %}

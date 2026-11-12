@@ -1,0 +1,6 @@
+*.db
+*.txt
+__pycache__/
+*.pyc
+.git/
+.out/

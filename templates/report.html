@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>📊 Monthly Report — {{ off.name }}</h1>
+<div class="card" style="max-width:560px">
+  <form method="post">
+    <label>Month</label>
+    <input type="month" name="month" required>
+    <br><br><button class="btn green">⬇️ Generate & Download (7-sheet Excel)</button>
+  </form>
+  <p class="muted">Same format as your September/October Excel reports:
+  0_README · 1_BIOMETRIC · 2_FINAL · 3_DISCREPANCY · 4_DAYWISE · 5_LATE_DETAIL · 6_EXCEPTIONS.
+  Approved regularizations and holiday/comp-off rules are included automatically.</p>
+</div>
+{% endblock %}

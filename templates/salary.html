@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>💰 Salary Details — {{ off.name }} (Admin only)</h1>
+<div class="card">
+  <p class="muted">Values imported from the October salary sheet. You can change them via
+  Employees → Edit. <b>Agents can never see this page.</b></p>
+  <div class="cal-wrap" style="margin-top:8px">
+  <table>
+    <tr><th>Emp ID</th><th>Name</th><th>Designation</th><th>Gross ₹</th>
+        <th>Payable Days</th><th>Payable Salary ₹</th><th>Incentive ₹</th>
+        <th>Cash Prize ₹</th><th>TL Incentive ₹</th><th>Arrear ₹</th>
+        <th>Deduction ₹</th><th>FINAL PAYABLE ₹</th></tr>
+    {% for e in emps %}
+      <tr><td>{{ e.emp_id }}</td><td>{{ e.name }}</td><td>{{ e.designation or '-' }}</td>
+        <td>{{ e.gross or 0 }}</td><td>{{ e.payable_days or 0 }}</td>
+        <td>{{ e.payable_salary or 0 }}</td><td>{{ e.incentive or 0 }}</td>
+        <td>{{ e.cash_prize or 0 }}</td><td>{{ e.tl_incentive or 0 }}</td>
+        <td>{{ e.arrear or 0 }}</td><td>{{ e.deduction or 0 }}</td>
+        <td style="font-weight:700;color:#1e2a4a">{{ e.final_payable or 0 }}</td></tr>
+    {% endfor %}
+    <tr style="background:#1e2a4a;color:#fff;font-weight:700">
+      <td colspan="3">TOTAL ({{ emps|length }} employees)</td>
+      <td>{{ totals.gross }}</td><td>{{ totals.payable_days }}</td>
+      <td>{{ totals.payable_salary }}</td><td>{{ totals.incentive }}</td>
+      <td>{{ totals.cash_prize }}</td><td>{{ totals.tl_incentive }}</td>
+      <td>{{ totals.arrear }}</td><td>{{ totals.deduction }}</td>
+      <td>{{ totals.final_payable }}</td></tr>
+  </table>
+  </div>
+</div>
+{% endblock %}

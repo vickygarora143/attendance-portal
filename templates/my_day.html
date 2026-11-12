@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Day Detail — {{ adate.strftime('%d-%b-%Y (%a)') }}</h1>
+<div class="card" style="max-width:640px">
+  <table>
+    <tr><th></th><th>Final (DB)</th><th>Device raw</th></tr>
+    <tr><td>Status</td>
+      <td><span class="tag c-{{ a.code if a else '-' }}">{{ a.code if a else '-' }}</span>
+          {{ '*' if a and a.adjusted }}</td>
+      <td>{{ p.status if p else 'no record' }}</td></tr>
+    <tr><td>IN</td><td>{{ a.in_time or '-' if a else '-' }}</td><td>{{ p.in_time or '-' if p else '-' }}</td></tr>
+    <tr><td>OUT</td><td>{{ a.out_time or '-' if a else '-' }}</td><td>{{ p.out_time or '-' if p else '-' }}</td></tr>
+    <tr><td>Total hrs</td><td>{{ a.total_hrs or '-' if a else '-' }}</td><td>{{ p.total_hrs or '-' if p else '-' }}</td></tr>
+  </table>
+</div>
+{% if pending %}
+  <div class="flash warning">A request is already PENDING for this date ({{ pending.rtype }}).</div>
+{% else %}
+<div class="card" style="max-width:640px">
+  <h2>Regularization request</h2>
+  <form method="post" action="{{ url_for('agent.regularize', y=adate.year, m=adate.month, d=adate.day) }}">
+    <label>Request type</label>
+    <select name="rtype">{% for v, lbl in rtypes %}<option value="{{ v }}">{{ lbl }}</option>{% endfor %}</select>
+    <label>Reason *</label>
+    <textarea name="reason" rows="3" style="width:100%" placeholder="e.g. Punch didn't register on the device, I was in office at 10:00"></textarea>
+    <br><br><button class="btn green">Submit Request</button>
+    <a class="btn grey" href="{{ url_for('agent.my_attendance', y=adate.year, m=adate.month) }}">Back</a>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

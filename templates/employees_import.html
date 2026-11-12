@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>📥 Import Employees from Excel</h1>
+<div class="card">
+  <p class="muted">Upload the monthly <b>manual attendance .xlsx</b> (same file you used for
+  October). It creates/updates employee records with designation, DOJ, zone, gross and all
+  salary fields, and creates a portal login for each employee (username = Emp ID,
+  password = <b>welcome123</b>).<br>
+  Existing employees (same Emp ID) are <b>updated</b> — never duplicated. You can re-upload
+  every month to refresh salary values.</p>
+  {% if done %}
+    <div class="flash success">{{ done }}</div>
+    <a class="btn" href="{{ url_for('admin.employees') }}">← Back to Employees</a>
+  {% else %}
+    <form method="post" enctype="multipart/form-data" style="margin-top:12px">
+      <div class="form-row">
+        <div>
+          <label>Manual attendance .xlsx</label>
+          <input type="file" name="file" accept=".xlsx" required>
+        </div>
+        <div style="align-self:flex-end">
+          <button class="btn" type="submit">Import</button>
+        </div>
+      </div>
+    </form>
+    <p class="muted" style="margin-top:10px">File must be .xlsx with the data on a sheet
+    named <b>Sheet1</b> (header row 1, data from row 2).</p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>🗓 Attendance — {{ emp.name }} ({{ emp.emp_id }}) · {{ '%02d'|format(m) }}-{{ y }}</h1>
+<div class="card">
+  <form method="get" style="display:inline">
+    <input type="month" name="ym" onchange="location='{{ url_for('admin.attendance_edit', eid=emp.id) }}&ym='+this.value">
+  </form>
+  <p class="muted">Use the selector above to change the month. The form below sets each day's code.</p>
+  <form method="post">
+    <table class="cal">
+      <tr>{% for x in days %}<th>{{ x.d }}</th>{% endfor %}</tr>
+      <tr>
+        {% for x in days %}
+          <td class="codecell {{ 'adj' if x.att and x.att.adjusted }}">
+            <select name="d{{ x.d }}" style="width:100%">
+              {% for c in codes %}
+                <option value="{{ c }}" {{ 'selected' if x.att and x.att.code == c }}>{{ c }}</option>
+              {% endfor %}
+            </select>
+          </td>
+        {% endfor %}
+      </tr>
+    </table>
+    <br><button class="btn green">💾 Save Attendance</button>
+    <span class="muted">* = already adjusted / manual (recorded in audit log)</span>
+  </form>
+</div>
+{% endblock %}

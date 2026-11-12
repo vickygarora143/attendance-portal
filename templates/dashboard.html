@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ off.name }} — Admin Dashboard</h1>
+<div class="cards">
+  <div class="card"><div class="muted">EMPLOYEES</div><div class="big">{{ emps }}</div>
+    <a class="btn sm grey" href="{{ url_for('admin.employees') }}">Manage</a></div>
+  <div class="card"><div class="muted">PENDING REQUESTS</div><div class="big">{{ pending }}</div>
+    <a class="btn sm" href="{{ url_for('admin.requests') }}">Review</a></div>
+  <div class="card"><div class="muted">LAST UPLOAD</div>
+    {% if last_up %}<div style="font-weight:700">{{ last_up.filename }}</div>
+    <div class="muted">{{ last_up.month }} · {{ last_up.created_at.strftime('%d-%b %H:%M') }} · {{ last_up.n_rows }} employees</div>
+    {% else %}<div class="muted">No upload yet</div>{% endif %}
+    <a class="btn sm green" href="{{ url_for('admin.upload') }}">+ Upload Daily Report</a></div>
+  <div class="card"><div class="muted">MONTHLY REPORT</div>
+    <div class="muted">Same 7-sheet Excel format</div>
+    <a class="btn sm" href="{{ url_for('admin.report') }}">Generate / Download</a></div>
+</div>
+<div class="card" style="margin-top:16px">
+  <h2>How to use (daily)</h2>
+  <ol style="font-size:14px;line-height:1.9">
+    <li>Every morning download the <b>biometric report .xls</b> from the device</li>
+    <li><b>Upload</b> → select month → choose file → check preview → <b>Confirm Import</b></li>
+    <li>Agents view their attendance and send a <b>regularization request</b> if something is wrong</li>
+    <li><b>Requests</b> page → approve / reject (with device punch evidence)</li>
+    <li>Month end → <b>Report</b> → Excel download (your usual format)</li>
+  </ol>
+</div>
+{% endblock %}

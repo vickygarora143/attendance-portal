@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+{% if not emp %}
+  <div class="flash danger">Your profile is not linked to an employee — contact your admin.</div>
+{% else %}
+<h1>📋 {{ emp.name }} <span class="tag c-P" style="vertical-align:middle">{{ emp.emp_id }}</span></h1>
+<div class="muted" style="margin:-8px 0 12px">
+  {{ emp.designation or 'Staff' }}{% if emp.zone %} · {{ emp.zone }}{% endif %} ·
+  attendance for {{ '%02d'|format(m) }}-{{ y }}
+</div>
+<div class="card">
+  <form method="get" action="{{ url_for('agent.my_attendance') }}">
+    <input type="month" name="ym" value="{{ '%04d-%02d'|format(y, m) }}"
+           onchange="location='{{ url_for('agent.my_attendance') }}?ym='+this.value">
+  </form>
+  <div class="cal-wrap" style="margin-top:10px">
+  <table class="cal">
+    <tr>{% for x in days %}<th>{{ x.d }}</th>{% endfor %}</tr>
+    <tr class="wdrow">{% for x in days %}<td>{{ x.wd }}</td>{% endfor %}</tr>
+    <tr>{% for x in days %}
+      <td class="codecell c-{{ x.code }} {{ 'adj' if x.adjusted }}">
+        <a href="{{ url_for('agent.my_day', y=y, m=m, d=x.d) }}">{{ x.code }}</a>
+      </td>{% endfor %}</tr>
+    <tr>{% for x in days %}<td style="font-size:10px;color:#6b7688">{{ x.in or '' }}{% if x.out %}<br>{{ x.out }}{% endif %}</td>{% endfor %}</tr>
+  </table>
+  </div>
+  <div class="legend">
+    <span class="c-P">P Present</span><span class="c-L">L Late</span><span class="c-A">A Absent</span>
+    <span class="c-H">H Half-day</span><span class="c-WO">WO Weekly-off</span>
+    <span class="c-HO">HO Holiday</span><span class="c-O">O Comp-off</span>
+    <span style="background:#fff;border:1px solid #e3e8f0">* Adjusted</span>
+  </div>
+  <p class="muted" style="margin-top:6px">Click any day to open details and the
+  <b>regularization request</b> form.</p>
+</div>
+<div class="cards">
+  <div class="card"><div class="muted">PRESENT</div><div class="big">{{ summ.P }}</div>
+    <div class="muted">{{ summ.waived }} waived late included</div></div>
+  <div class="card"><div class="muted">ABSENT</div><div class="big" style="color:var(--red)">{{ summ.A }}</div></div>
+  <div class="card"><div class="muted">LATE</div><div class="big" style="color:var(--orange)">{{ summ.L }}</div>
+    <div class="muted">first {{ emp.office.waiver if emp.office else 4 }} waived{% if summ.deduct %} · {{ summ.deduct }} deducted (×1/6){% endif %}</div></div>
+  <div class="card"><div class="muted">HALF-DAY</div><div class="big" style="color:var(--amber)">{{ summ.H }}</div></div>
+  <div class="card"><div class="muted">WO / HO / O</div><div class="big">{{ summ.WO }} / {{ summ.HO }} / {{ summ.O }}</div></div>
+</div>
+{% endif %}
+{% endblock %}

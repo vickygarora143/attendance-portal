@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Preview — {{ up.filename }} ({{ up.month }})</h1>
+<div class="card">
+  <b>{{ known|length }}</b> employees matched · <b>{{ unknown|length }}</b> unknown device IDs
+  <table style="margin-top:10px">
+    <tr><th>Device ID</th><th>Name</th><th>Days</th><th>Present/WOP</th><th>Lates</th><th>Status</th></tr>
+    {% for r in known %}
+      <tr><td>{{ r.code }}</td><td>{{ r.name }}</td><td>{{ r.ndays }}</td>
+        <td>{{ r.present }}</td><td>{{ r.lates }}</td><td style="color:#0a6b2d">✓ matched</td></tr>
+    {% endfor %}
+    {% for r in unknown %}
+      <tr><td>{{ r.code }}</td><td>{{ r.name }}</td><td>{{ r.ndays }}</td>
+        <td>{{ r.present }}</td><td>{{ r.lates }}</td>
+        <td style="color:#c00000">✗ not in Employees — <a href="{{ url_for('admin.employee_form') }}">add</a> (ID: {{ r.code }})</td></tr>
+    {% endfor %}
+  </table>
+</div>
+<div class="card">
+  <form method="post" action="{{ url_for('admin.confirm', uid=up.id) }}" style="display:inline">
+    <button class="btn green">✅ Confirm Import</button>
+  </form>
+  <form method="post" action="{{ url_for('admin.discard', uid=up.id) }}" style="display:inline">
+    <button class="btn red">❌ Discard</button>
+  </form>
+  <p class="muted">On confirm: all day-records of matched employees will be imported
+  (rules: first IN after {{ '%02d:%02d'|format(off.late_after//60, off.late_after%60) }} = L, WOP = O,
+  device A on holiday = HO). Days already adjusted manually will not be overwritten.</p>
+</div>
+{% endblock %}

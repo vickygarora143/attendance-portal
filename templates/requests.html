@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>📝 Regularization Requests</h1>
+<div class="card">
+  <h2>Pending ({{ pend|length }})</h2>
+  {% for r in pend %}
+    {% set p, a = ev[r.id] %}
+    <div style="border:1px solid #dde3ea;border-radius:6px;padding:10px 14px;margin:10px 0">
+      <b>{{ r.employee.name }}</b> ({{ r.employee.emp_id }}) — {{ r.adate.strftime('%d-%b-%Y (%a)') }}
+      <span class="tag status-PENDING">{{ r.rtype }}</span>
+      <div style="font-size:13px;margin:6px 0"><b>Reason:</b> {{ r.reason }}</div>
+      <div style="font-size:13px" class="muted">
+        Current code: <b>{{ r.current_code }}</b> ·
+        Device: status={{ p.status if p else '-' }}, IN={{ p.in_time if p else '-' }},
+        OUT={{ p.out_time if p else '-' }} ·
+        Suggested: <b>{{ r.requested_code }}</b>
+      </div>
+      <form method="post" action="{{ url_for('admin.decide', rid=r.id) }}" class="form-row" style="margin-top:8px">
+        <div>
+          <label>Approve as code</label>
+          <select name="set_code">
+            <option value="{{ r.requested_code }}">{{ r.requested_code }} (suggested)</option>
+            {% for c in ['P','O','L','H','HD','WO','HO','-'] if c != r.requested_code %}
+              <option value="{{ c }}">{{ c }}</option>{% endfor %}
+          </select>
+        </div>
+        <div style="flex:2"><label>Remark</label><input name="remark" style="width:100%" placeholder="optional"></div>
+        <div style="align-self:flex-end">
+          <button class="btn sm green" name="action" value="approve">✅ Approve</button>
+          <button class="btn sm red" name="action" value="reject">❌ Reject</button>
+        </div>
+      </form>
+    </div>
+  {% else %}<p class="muted">No pending requests.</p>{% endfor %}
+</div>
+<div class="card">
+  <h2>Recent decided</h2>
+  <table><tr><th>Employee</th><th>Date</th><th>Type</th><th>Status</th><th>Remark</th><th>Decided</th></tr>
+  {% for r in decided %}
+    <tr><td>{{ r.employee.name }}</td><td>{{ r.adate }}</td><td>{{ r.rtype }}</td>
+      <td><span class="tag status-{{ r.status|upper }}">{{ r.status }}</span></td>
+      <td>{{ r.admin_remark or '-' }}</td><td>{{ r.decided_at.strftime('%d-%b %H:%M') if r.decided_at }}</td></tr>
+  {% else %}<tr><td colspan="6" class="muted">Nothing decided yet.</td></tr>{% endfor %}
+  </table>
+</div>
+{% endblock %}

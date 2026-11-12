@@ -74,5 +74,5 @@ Rules (Office settings me badle ja sakte hain):
 
 ## Notes
 - Render free tier: 15 min idle ke baad pehli request 30–50 sec leti hai (cold start).
-- DB backups: Supabase automatic + month-end Excel export = double safety.
+- DB backups: Supabase **free plan me automatic backups nahi hote**. Month-end Excel export + `pg_dump` backup lo (dekho AUDIT report).
 - Test: `python test_smoke.py` (sare pages + approve flow + report download check karta hai).

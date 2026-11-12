@@ -29,8 +29,18 @@ class User(db.Model):
     office_id = db.Column(db.Integer, db.ForeignKey("offices.id"))
     employee_id = db.Column(db.Integer, db.ForeignKey("employees.id"))
     active = db.Column(db.Boolean, default=True)
+    must_change_pw = db.Column(db.Boolean, default=False)  # force change on next login
     office = db.relationship("Office")
     employee = db.relationship("Employee", foreign_keys=[employee_id])
+
+
+class LoginAttempt(db.Model):
+    """Failed login attempts — used for rate limiting / lockout."""
+    __tablename__ = "login_attempts"
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(64), index=True)
+    ip = db.Column(db.String(64))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
 
 
 class Employee(db.Model):

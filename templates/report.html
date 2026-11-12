@@ -2,7 +2,7 @@
 {% block content %}
 <h1>📊 Monthly Report — {{ off.name }}</h1>
 <div class="card" style="max-width:560px">
-  <form method="post">
+  <form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label>Month</label>
     <input type="month" name="month" required>
     <br><br><button class="btn green">⬇️ Generate & Download (7-sheet Excel)</button>

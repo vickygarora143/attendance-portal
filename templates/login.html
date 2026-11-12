@@ -7,7 +7,7 @@
       <h1 style="margin:6px 0 2px">Attendance Portal</h1>
       <div class="muted">Login with your credentials</div>
     </div>
-    <form method="post">
+    <form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <label>Username</label>
       <input name="username" style="width:100%" autofocus required placeholder="e.g. GDSM015" autocapitalize="characters" autocomplete="username">
       <label>Password</label>

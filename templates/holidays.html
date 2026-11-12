@@ -2,7 +2,7 @@
 {% block content %}
 <h1>🎄 Holidays — {{ off.name }}</h1>
 <div class="card" style="max-width:520px">
-  <form method="post" class="form-row">
+  <form method="post" class="form-row"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div><label>Date</label><input type="date" name="hdate" required></div>
     <div><label>Name</label><input name="name" placeholder="Gandhi Jayanti"></div>
     <div style="align-self:flex-end"><button class="btn green">+ Add</button></div>
@@ -13,7 +13,7 @@
   <table><tr><th>Date</th><th>Name</th><th></th></tr>
   {% for h in hols %}
     <tr><td>{{ h.hdate.strftime('%d-%b-%Y') }}</td><td>{{ h.name }}</td>
-      <td><form method="post"><input type="hidden" name="delete_id" value="{{ h.id }}">
+      <td><form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="delete_id" value="{{ h.id }}">
         <button class="btn sm red">Delete</button></form></td></tr>
   {% else %}<tr><td colspan="3" class="muted">No holidays added.</td></tr>{% endfor %}
   </table>

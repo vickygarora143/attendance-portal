@@ -18,11 +18,38 @@ python app.py           # http://localhost:5000
 
 | Role | Username | Password |
 |---|---|---|
-| Super Admin | `admin` | `admin123` |
-| Admin (Mohali) | `mohali_admin` | `admin123` |
+| Super Admin | `admin` | (set on deploy — seeded `admin123` sirf fresh DB pe) |
+| Admin (Mohali) | `mohali_admin` | (set on deploy) |
 | Agent | `<Emp ID>` jaise `GDSM015` | `welcome123` |
 
-⚠️ Deploy se pehle sab passwords change karein (Super Admin → Users → Edit).
+⚠️ Production passwords rotate ho chuke hain. Naye deploy pe `ADMIN_PASSWORD` env se set karein, ya first login ke baad 🔑 Password page se badlein.
+
+## Security & backups
+
+- **Login rate limit:** ek username+IP ke liye 15 min me 5 galat try → 6th attempt 429 (block).
+- **CSRF:** har POST form me `csrf_token` hidden field hota hai (auto check hota hai). Test client ke liye `app.config["TESTING"] = True` par bypass.
+- **Cookies:** `HttpOnly` + `SameSite=Lax`; cloud pe `Secure` bhi (env `SESSION_COOKIE_SECURE=0` se off kar sakte hain).
+- **Headers:** HSTS, `X-Frame-Options: DENY`, `X-Content-Type-Options`, CSP, Referrer-Policy.
+- **Forced password change:** `users.must_change_pw = true` karne par user agla login pe password change page pe redirect ho jata hai.
+
+### Backups (zaroori — Supabase free me automatic backup nahi)
+
+```powershell
+python backup_db.py            # cloud -> backups\portal_cloud_<date>.sql.gz
+python backup_db.py --local    # local SQLite
+```
+
+- Connection string `backup_config.json` me (gitignored) ya `DATABASE_URL` env me.
+- Purane 8 backups rakhe jate hain (`BACKUP_KEEP` env se badal sakte hain).
+- Weekly schedule (Task Scheduler):
+
+```powershell
+schtasks /create /tn "AttendancePortalBackup" /tr "C:\Users\GOODWILL\attendance_portal\backup_weekly.bat" /sc weekly /d SUN /st 10:00
+```
+
+- Restore: `gunzip portal_cloud_*.sql.gz` → Supabase SQL editor me file chalayein (ya `psql -f`).
+
+⚠️ Backup file me password hashes hote hain — safe jagah rakhein, public folder/WhatsApp me na bhejein.
 
 ## Daily workflow
 

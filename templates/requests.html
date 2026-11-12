@@ -15,7 +15,7 @@
         OUT={{ p.out_time if p else '-' }} ·
         Suggested: <b>{{ r.requested_code }}</b>
       </div>
-      <form method="post" action="{{ url_for('admin.decide', rid=r.id) }}" class="form-row" style="margin-top:8px">
+      <form method="post" action="{{ url_for('admin.decide', rid=r.id) }}" class="form-row" style="margin-top:8px"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div>
           <label>Approve as code</label>
           <select name="set_code">

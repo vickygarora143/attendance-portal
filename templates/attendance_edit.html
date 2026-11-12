@@ -6,7 +6,7 @@
     <input type="month" name="ym" onchange="location='{{ url_for('admin.attendance_edit', eid=emp.id) }}&ym='+this.value">
   </form>
   <p class="muted">Use the selector above to change the month. The form below sets each day's code.</p>
-  <form method="post">
+  <form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <table class="cal">
       <tr>{% for x in days %}<th>{{ x.d }}</th>{% endfor %}</tr>
       <tr>

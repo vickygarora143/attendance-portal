@@ -2,11 +2,47 @@
 """Login / logout / change-password routes."""
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from sqlalchemy import func
+from datetime import datetime, timedelta
 from werkzeug.security import check_password_hash, generate_password_hash
-from models import db, User
+from models import db, User, LoginAttempt
 from helpers import current_user, audit, login_required
 
 bp = Blueprint("auth", __name__)
+
+# brute-force protection: N failed attempts per username+IP within the window
+MAX_FAILS = 5
+LOCK_MINUTES = 15
+
+
+def _client_ip():
+    xff = request.headers.get("X-Forwarded-For", "")
+    ip = xff.split(",")[0].strip() if xff else (request.remote_addr or "")
+    return ip[:60]
+
+
+def _too_many(username, ip):
+    since = datetime.utcnow() - timedelta(minutes=LOCK_MINUTES)
+    n = LoginAttempt.query.filter(
+        LoginAttempt.created_at >= since,
+        func.lower(LoginAttempt.username) == username.lower(),
+        LoginAttempt.ip == ip).count()
+    return n >= MAX_FAILS
+
+
+def _record_fail(username, ip):
+    db.session.add(LoginAttempt(username=username[:60], ip=ip))
+    # keep the table small
+    db.session.query(LoginAttempt).filter(
+        LoginAttempt.created_at < datetime.utcnow() - timedelta(days=1)
+    ).delete(synchronize_session=False)
+    db.session.commit()
+
+
+def _clear_fails(username, ip):
+    LoginAttempt.query.filter(
+        func.lower(LoginAttempt.username) == username.lower(),
+        LoginAttempt.ip == ip).delete(synchronize_session=False)
+    db.session.commit()
 
 
 @bp.route("/change-password", methods=["GET", "POST"])
@@ -29,6 +65,7 @@ def change_password():
             flash("New password must be different from the current one.", "warning")
         else:
             u.password_hash = generate_password_hash(new_pw)
+            u.must_change_pw = False
             audit("password.changed", f"user={u.username}")
             db.session.commit()
             flash("Password changed successfully.", "success")
@@ -44,11 +81,23 @@ def login():
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
+        ip = _client_ip()
+        if username and _too_many(username, ip):
+            flash("Too many failed attempts. Please wait 15 minutes and try again.", "danger")
+            return render_template("login.html"), 429
         # case-insensitive username match (agents may type gdsm015 / Gdsm015)
         u = User.query.filter(func.lower(User.username) == username.lower()).first()
         if u and u.active and check_password_hash(u.password_hash, password):
+            _clear_fails(username, ip)
+            session.clear()                 # fresh session on login (no fixation)
             session["uid"] = u.id
+            session["last_act"] = datetime.utcnow().timestamp()
+            if getattr(u, "must_change_pw", False):
+                flash("Please set a new password before continuing.", "warning")
+                return redirect(url_for("auth.change_password"))
             return redirect(url_for("auth.home"))
+        if username:
+            _record_fail(username, ip)
         flash("Invalid username or password.", "danger")
     return render_template("login.html")
 

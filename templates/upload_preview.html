@@ -17,10 +17,10 @@
   </table>
 </div>
 <div class="card">
-  <form method="post" action="{{ url_for('admin.confirm', uid=up.id) }}" style="display:inline">
+  <form method="post" action="{{ url_for('admin.confirm', uid=up.id) }}" style="display:inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <button class="btn green">✅ Confirm Import</button>
   </form>
-  <form method="post" action="{{ url_for('admin.discard', uid=up.id) }}" style="display:inline">
+  <form method="post" action="{{ url_for('admin.discard', uid=up.id) }}" style="display:inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <button class="btn red">❌ Discard</button>
   </form>
   <p class="muted">On confirm: all day-records of matched employees will be imported

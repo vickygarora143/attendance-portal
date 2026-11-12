@@ -1,11 +1,18 @@
 ﻿# -*- coding: utf-8 -*-
 """End-to-end smoke test of the portal using Flask test client."""
 import io
+import os
 import sys
 import openpyxl
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 from app import app
+
+# test client posts forms directly, so CSRF is skipped in test mode only
+app.config["TESTING"] = True
+
+ADMIN_PW = os.environ.get("SMOKE_ADMIN_PW", "adminmohaligds@247")
+AGENT_PW = os.environ.get("SMOKE_AGENT_PW", "welcome123")
 
 c = app.test_client()
 fails = []
@@ -21,7 +28,7 @@ def check(name, resp, code=200):
 
 print("== auth ==")
 check("login page", c.get("/login"))
-r = c.post("/login", data={"username": "mohali_admin", "password": "admin123"}, follow_redirects=True)
+r = c.post("/login", data={"username": "mohali_admin", "password": ADMIN_PW}, follow_redirects=True)
 check("admin login -> dashboard", r)
 
 print("== admin pages ==")
@@ -44,7 +51,7 @@ except Exception as e:
 
 print("== agent flow ==")
 c.get("/logout")
-c.post("/login", data={"username": "GDSM015", "password": "welcome123"}, follow_redirects=True)
+c.post("/login", data={"username": "GDSM015", "password": AGENT_PW}, follow_redirects=True)
 check("/me", c.get("/me"))
 check("/me/requests", c.get("/me/requests"))
 check("/me/day 2026-10-17", c.get("/me/day/2026/10/17"))
@@ -55,7 +62,7 @@ check("agent raise request", r)
 c.get("/logout")
 
 print("== admin approve ==")
-c.post("/login", data={"username": "mohali_admin", "password": "admin123"}, follow_redirects=True)
+c.post("/login", data={"username": "mohali_admin", "password": ADMIN_PW}, follow_redirects=True)
 check("requests page shows pending", c.get("/admin/requests"))
 import models
 with app.app_context():
@@ -73,7 +80,7 @@ with app.app_context():
 
 print("== super admin ==")
 c.get("/logout")
-c.post("/login", data={"username": "admin", "password": "admin123"}, follow_redirects=True)
+c.post("/login", data={"username": "admin", "password": ADMIN_PW}, follow_redirects=True)
 for p in ["/super", "/super/users", "/super/audit"]:
     check(p, c.get(p))
 
@@ -81,4 +88,4 @@ print()
 if fails:
     print("FAILURES:", fails)
     sys.exit(1)
-print("ALL SMOKE TESTS PASSED âœ…")
+print("ALL SMOKE TESTS PASSED")

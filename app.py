@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Attendance Portal — main app factory."""
 import os
+import secrets
 from datetime import datetime
 from flask import Flask, redirect, url_for, session, g, request, flash
 from models import db, RegRequest, Employee, User
@@ -8,6 +9,9 @@ from helpers import current_user
 
 # auto-logout after this many minutes without any activity
 SESSION_IDLE_MINUTES = 30
+
+# endpoints reachable while a user is forced to change their password
+PW_CHANGE_ALLOWED = {"auth.change_password", "auth.logout", "static"}
 
 
 def _bootstrap_super_admin(app):
@@ -32,6 +36,13 @@ def create_app():
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["MAX_CONTENT_LENGTH"] = 20 * 1024 * 1024  # 20 MB uploads
+    # --- session cookie hardening ---
+    # Secure cookies only make sense on HTTPS; local dev runs on plain http.
+    _on_cloud = bool(os.environ.get("RENDER") or os.environ.get("DATABASE_URL"))
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+    app.config["SESSION_COOKIE_SECURE"] = os.environ.get(
+        "SESSION_COOKIE_SECURE", "1" if _on_cloud else "0") == "1"
     db.init_app(app)
 
     with app.app_context():
@@ -52,6 +63,44 @@ def create_app():
                       "warning")
                 return redirect(url_for("auth.login"))
             session["last_act"] = now
+
+    # ---- CSRF: one token per session, checked on every POST ----
+    def csrf_token():
+        tok = session.get("_csrf")
+        if not tok:
+            tok = secrets.token_urlsafe(32)
+            session["_csrf"] = tok
+        return tok
+
+    app.jinja_env.globals["csrf_token"] = csrf_token
+
+    @app.before_request
+    def csrf_protect():
+        if request.method in ("GET", "HEAD", "OPTIONS", "TRACE"):
+            return
+        if app.config.get("TESTING"):        # smoke tests post forms directly
+            return
+        sent = request.form.get("csrf_token") or request.headers.get("X-CSRFToken", "")
+        good = session.get("_csrf")
+        if not good or not sent or not secrets.compare_digest(str(sent), str(good)):
+            flash("Your form expired for security reasons. Please try again.", "danger")
+            back = request.referrer or ""
+            if not back.startswith(request.host_url):
+                back = url_for("auth.home")
+            return redirect(back), 303
+        # extra guard: reject cross-site origins even if a token leaks
+        origin = request.headers.get("Origin", "")
+        if origin and origin.rstrip("/") != request.host_url.rstrip("/"):
+            flash("Request blocked: unexpected origin.", "danger")
+            return redirect(url_for("auth.home")), 303
+
+    @app.before_request
+    def force_password_change():
+        """Users flagged by an admin must set a new password before doing anything else."""
+        u = current_user()
+        if u and getattr(u, "must_change_pw", False) and request.endpoint not in PW_CHANGE_ALLOWED:
+            flash("Please set a new password before continuing.", "warning")
+            return redirect(url_for("auth.change_password"))
 
     @app.before_request
     def pending_badge():
@@ -84,6 +133,22 @@ def create_app():
             response.headers["Cache-Control"] = "no-store, must-revalidate"
             response.headers["Pragma"] = "no-cache"
             response.headers["Expires"] = "0"
+        return response
+
+    @app.after_request
+    def security_headers(response):
+        """Baseline hardening headers (no CDN, no inline external assets)."""
+        h = response.headers
+        h.setdefault("X-Content-Type-Options", "nosniff")
+        h.setdefault("X-Frame-Options", "DENY")
+        h.setdefault("Referrer-Policy", "same-origin")
+        h.setdefault("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
+        h.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+        h.setdefault("Content-Security-Policy",
+                     "default-src 'self'; img-src 'self' data:; "
+                     "style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; "
+                     "font-src 'self' data:; connect-src 'self'; "
+                     "frame-ancestors 'none'; base-uri 'self'; form-action 'self'")
         return response
 
     @app.after_request

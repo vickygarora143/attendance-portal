@@ -2,7 +2,7 @@
 {% block content %}
 <h1>{{ 'Edit' if off else 'Add' }} Office</h1>
 <div class="card" style="max-width:640px">
-  <form method="post">
+  <form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="form-row">
       <div><label>Code *</label><input name="code" value="{{ off.code if off }}" required placeholder="MOHALI"></div>
       <div><label>Name *</label><input name="name" value="{{ off.name if off }}" required placeholder="Mohali Office"></div>

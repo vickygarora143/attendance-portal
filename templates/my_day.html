@@ -18,7 +18,7 @@
 {% else %}
 <div class="card" style="max-width:640px">
   <h2>Regularization request</h2>
-  <form method="post" action="{{ url_for('agent.regularize', y=adate.year, m=adate.month, d=adate.day) }}">
+  <form method="post" action="{{ url_for('agent.regularize', y=adate.year, m=adate.month, d=adate.day) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label>Request type</label>
     <select name="rtype">{% for v, lbl in rtypes %}<option value="{{ v }}">{{ lbl }}</option>{% endfor %}</select>
     <label>Reason *</label>

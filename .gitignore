@@ -12,3 +12,5 @@ seed_cloud.py
 import_*.py
 _*.py
 nov_out.txt
+backup_config.json
+backups/

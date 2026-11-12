@@ -1,0 +1,3 @@
+﻿emp_ids len: 48 [19, 15, 6, 40, 3]
+att in build-style query: 1359
+off.id: 1 <class 'int'>

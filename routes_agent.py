@@ -110,7 +110,7 @@ def regularize(y, m, d):
     u = current_user()
     emp = my_emp(u)
     if not emp:
-        flash("Profile linked nahi hai.", "danger")
+        flash("Profile is not linked.", "danger")
         return redirect(url_for(".my_attendance"))
     try:
         adate = date(y, m, d)

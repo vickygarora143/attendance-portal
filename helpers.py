@@ -38,7 +38,7 @@ def role_required(*roles):
             if not u:
                 return redirect(url_for("auth.login", next=request.path))
             if u.role not in roles:
-                flash("Aapke role ke liye ye page allowed nahi hai.", "danger")
+                flash("This page is not allowed for your role.", "danger")
                 return redirect(url_for("auth.home"))
             return f(*a, **k)
         return wrapper

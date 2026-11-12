@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """End-to-end smoke test of the portal using Flask test client."""
 import io
 import sys
@@ -49,7 +49,7 @@ check("/me", c.get("/me"))
 check("/me/requests", c.get("/me/requests"))
 check("/me/day 2026-10-17", c.get("/me/day/2026/10/17"))
 r = c.post("/me/regularize/2026/10/17",
-           data={"rtype": "missed_punch", "reason": "test: device me punch nahi laga"},
+           data={"rtype": "missed_punch", "reason": "test: punch did not register on device"},
            follow_redirects=True)
 check("agent raise request", r)
 c.get("/logout")
@@ -81,4 +81,4 @@ print()
 if fails:
     print("FAILURES:", fails)
     sys.exit(1)
-print("ALL SMOKE TESTS PASSED ✅")
+print("ALL SMOKE TESTS PASSED âœ…")

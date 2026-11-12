@@ -1,0 +1,4 @@
+﻿late detail rows: 57
+final sheet employees: 49
+discrepancy categories: {'DIFFERS': 43, 'NOT ON DEVICE': 4, 'OK': 1}
+sheet1 raw codes: {'-': 1457}

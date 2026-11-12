@@ -30,7 +30,7 @@ def _my_office():
 def dashboard():
     off = _my_office()
     if off is None:
-        flash("Pehle ek office banaayen / admin ko office assign karein.", "warning")
+        flash("Create an office first / assign an office to the admin.", "warning")
         return redirect(url_for("super.home"))
     month = date.today().strftime("%Y-%m")
     emps = Employee.query.filter_by(office_id=off.id).count()
@@ -373,7 +373,7 @@ def attendance_edit(eid):
     emp = db.session.get(Employee, eid)
     off = _my_office()
     if not emp or emp.office_id != off.id:
-        flash("Employee nahi mila.", "danger")
+        flash("Employee not found.", "danger")
         return redirect(url_for(".employees"))
     t = date.today()
     ym = request.values.get("ym")
@@ -446,7 +446,7 @@ def report():
         try:
             y, m = map(int, request.form.get("month", "").split("-"))
         except Exception:
-            flash("Month select karein.", "danger")
+            flash("Select the month.", "danger")
             return redirect(url_for(".report"))
         buf = build_report(off, y, m)
         audit("report.generated", f"office={off.code} {y}-{m:02d}")

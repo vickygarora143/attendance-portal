@@ -28,7 +28,7 @@ def office_form(oid=None):
         code = request.form.get("code", "").strip()
         name = request.form.get("name", "").strip()
         if not code or not name:
-            flash("Code aur Name zaroori hai.", "danger")
+            flash("Code and Name are required.", "danger")
             return redirect(request.url)
         if not off:
             if Office.query.filter_by(code=code).first():
@@ -74,10 +74,10 @@ def user_form(uid=None):
         password = request.form.get("password", "")
         if not u:
             if not username or User.query.filter_by(username=username).first():
-                flash("Username khali hai ya already exists.", "danger")
+                flash("Username is empty or already exists.", "danger")
                 return redirect(request.url)
             if not password:
-                flash("Naye user ke liye password zaroori hai.", "danger")
+                flash("Password is required for a new user.", "danger")
                 return redirect(request.url)
             u = User(username=username, password_hash=generate_password_hash(password))
             db.session.add(u)

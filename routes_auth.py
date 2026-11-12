@@ -17,7 +17,7 @@ def login():
         if u and u.active and check_password_hash(u.password_hash, password):
             session["uid"] = u.id
             return redirect(url_for("auth.home"))
-        flash("Galat username ya password.", "danger")
+        flash("Invalid username or password.", "danger")
     return render_template("login.html")
 
 

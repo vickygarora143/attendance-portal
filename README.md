@@ -51,6 +51,36 @@ schtasks /create /tn "AttendancePortalBackup" /tr "C:\Users\GOODWILL\attendance_
 
 ⚠️ Backup file me password hashes hote hain — safe jagah rakhein, public folder/WhatsApp me na bhejein.
 
+## Free plan — isme kya kya dhyan rakhna hai
+
+Pro plan ki zaroorat nahi. Free tier pe 3 limitations hain, teeno ka jugaad ho chuka hai:
+
+| Limitation | Free plan | Hamara jugaad |
+|---|---|---|
+| **Automatic backups** nahi | Supabase free me daily backup nahi milta | `backup_db.py` + weekly Task Scheduler (Sunday 10 AM), purane 8 backups |
+| **1 hafta inactive → project pause** | DB pause ho jata hai | `/healthz` endpoint + free cron (cron-job.org) daily ping |
+| **15 min idle → sleep** | Pehli request 30–50 s | Acceptable; ping se kam hota hai |
+
+### Supabase pause na ho — free cron setup (5 min)
+
+1. **https://cron-job.org** pe free account banao
+2. **Create cronjob** → URL: `https://attendance-portal-qgww.onrender.com/healthz`
+3. Schedule: **every day, 09:00** (ya har 12 ghante)
+4. Save
+
+Ye ping Render ko jagata hai aur DB me `SELECT 1` chalata hai — dono active rehte hain, koi cost nahi.
+
+### Backup ki ek copy bahar rakho
+
+Weekly backup isi PC pe banta hai. Mahine me ek baar `backups\` folder se latest `.sql.gz` **Google Drive** (free 15 GB) ya pen drive me copy kar do — PC kharab hone pe bhi data bachega.
+
+### Health check
+
+```powershell
+curl https://attendance-portal-qgww.onrender.com/healthz
+# {"ok":true,"db":"ok"}
+```
+
 ## DB password rotate karna (Supabase)
 
 Agar DB password change karte ho to **3 jagah** update karna hota hai — warna portal 500 deta hai:

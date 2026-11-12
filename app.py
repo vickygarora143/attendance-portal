@@ -152,6 +152,16 @@ def create_app():
     def index():
         return redirect(url_for("auth.home"))
 
+    @app.route("/healthz")
+    def healthz():
+        """Tiny health check for free uptime monitors (keeps DB from pausing)."""
+        from sqlalchemy import text
+        try:
+            db.session.execute(text("SELECT 1"))
+            return {"ok": True, "db": "ok"}, 200
+        except Exception:
+            return {"ok": False, "db": "error"}, 503
+
     @app.after_request
     def no_cache_html(response):
         """Never let the browser show a logged-in page after logout (back/refresh)."""

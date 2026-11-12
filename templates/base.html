@@ -28,7 +28,7 @@
       <a href="{{ url_for('agent.my_attendance') }}">📋 My Attendance</a>
       <a href="{{ url_for('agent.my_requests') }}">📨 My Requests</a>
     {% endif %}
-    <span class="right"><span class="who">{{ u.username }} · {{ u.role.replace('_',' ') }}</span>
+    <span class="right"><span class="who">{{ u.username }} · {{ (u.employee.designation if u.employee and u.employee.designation else u.role.replace('_',' ')) }}</span>
       <a href="{{ url_for('auth.change_password') }}">🔑 Password</a>
       <a href="{{ url_for('auth.logout') }}">Logout →</a></span>
   {% endif %}

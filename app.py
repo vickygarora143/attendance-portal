@@ -154,13 +154,18 @@ def create_app():
 
     @app.route("/healthz")
     def healthz():
-        """Tiny health check for free uptime monitors (keeps DB from pausing)."""
+        """Tiny health check for free uptime monitors (keeps DB from pausing).
+
+        Also reports the deployed commit so a deploy can be verified from outside:
+        Render sets RENDER_GIT_COMMIT automatically.
+        """
         from sqlalchemy import text
+        build = (os.environ.get("RENDER_GIT_COMMIT") or "dev")[:7]
         try:
             db.session.execute(text("SELECT 1"))
-            return {"ok": True, "db": "ok"}, 200
+            return {"ok": True, "db": "ok", "build": build}, 200
         except Exception:
-            return {"ok": False, "db": "error"}, 503
+            return {"ok": False, "db": "error", "build": build}, 503
 
     @app.after_request
     def no_cache_html(response):

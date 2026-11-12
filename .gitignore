@@ -1,5 +1,7 @@
 *.db
-*.txt
+*.out.txt
+seed_out.txt
+smoke_out.txt
 __pycache__/
 *.pyc
 .git/

@@ -1,36 +1,69 @@
 {% extends "base.html" %}
+{% block title %}{{ 'Edit' if u else 'Add' }} user · Attendance Portal{% endblock %}
 {% block content %}
-<h1>{{ 'Edit' if u else 'Add' }} User</h1>
-<div class="card" style="max-width:640px">
+<div class="page-head">
+  <div class="titles">
+    <h1>{{ 'Edit' if u else 'Add' }} user</h1>
+    <div class="subtitle">Agents need an office and a linked employee record to see their attendance.</div>
+  </div>
+  <div class="actions">
+    <a class="btn ghost" href="{{ url_for('super.users') }}">Back to users</a>
+  </div>
+</div>
+
+<div class="card" style="max-width:720px">
   <form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <div class="form-row">
-      <div><label>Username *</label><input name="username" value="{{ u.username if u }}" required></div>
-      <div><label>Password {{ '(blank = no change)' if u else '*' }}</label>
-        <input name="password" type="password"></div>
+
+    <div class="fieldset-title">Login</div>
+    <div class="form-grid">
+      <div>
+        <label for="username">Username *</label>
+        <input id="username" name="username" value="{{ u.username if u }}" required autocomplete="off">
+      </div>
+      <div>
+        <label for="password">Password {{ '(blank = no change)' if u else '*' }}</label>
+        <input id="password" name="password" type="password" autocomplete="new-password">
+      </div>
     </div>
-    <div class="form-row">
-      <div><label>Role</label>
-        <select name="role">
+
+    <div class="fieldset-title">Access</div>
+    <div class="form-grid">
+      <div>
+        <label for="role">Role</label>
+        <select id="role" name="role">
           {% for r in ['agent', 'admin', 'super_admin'] %}
-            <option value="{{ r }}" {{ 'selected' if u and u.role == r }}>{{ r }}</option>
+            <option value="{{ r }}" {{ 'selected' if u and u.role == r }}>{{ r.replace('_', ' ') }}</option>
           {% endfor %}
-        </select></div>
-      <div><label>Office (agents/admins ke liye)</label>
-        <select name="office_id"><option value="">—</option>
-          {% for o in offs %}<option value="{{ o.id }}" {{ 'selected' if u and u.office_id == o.id }}>{{ o.code }}</option>{% endfor %}
-        </select></div>
-    </div>
-    <div class="form-row">
-      <div><label>Link Employee (agent ke liye)</label>
-        <select name="employee_id"><option value="">—</option>
+        </select>
+      </div>
+      <div>
+        <label for="office_id">Office</label>
+        <select id="office_id" name="office_id">
+          <option value="">—</option>
+          {% for o in offs %}<option value="{{ o.id }}" {{ 'selected' if u and u.office_id == o.id }}>{{ o.code }} — {{ o.name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="employee_id">Linked employee</label>
+        <select id="employee_id" name="employee_id">
+          <option value="">—</option>
           {% for e in emps %}<option value="{{ e.id }}" {{ 'selected' if u and u.employee_id == e.id }}>{{ e.emp_id }} — {{ e.name }}</option>{% endfor %}
-        </select></div>
-      <div style="align-self:flex-end;padding-top:6px">
-        <label style="margin:0;display:flex;align-items:center;gap:6px">
-          <input type="checkbox" name="active" {{ 'checked' if not u or u.active }} style="width:auto"> Active</label></div>
+        </select>
+      </div>
     </div>
-    <br><button class="btn green">💾 Save User</button>
-    <a class="btn grey" href="{{ url_for('super.users') }}">Cancel</a>
+
+    <div class="fieldset-title">State</div>
+    <label class="check">
+      <input type="checkbox" name="active" {{ 'checked' if not u or u.active }}>
+      Active (can sign in)
+    </label>
+
+    <div class="form-actions">
+      <button class="btn green">
+        <svg aria-hidden="true"><use href="#i-check"/></svg>Save user
+      </button>
+      <a class="btn ghost" href="{{ url_for('super.users') }}">Cancel</a>
+    </div>
   </form>
 </div>
 {% endblock %}

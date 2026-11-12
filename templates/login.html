@@ -1,19 +1,26 @@
 {% extends "base.html" %}
+{% block title %}Login · Attendance Portal{% endblock %}
 {% block content %}
-<div style="max-width:400px;margin:7vh auto 0;">
-  <div class="card" style="padding:28px 26px">
-    <div style="text-align:center;margin-bottom:18px">
-      <div style="font-size:40px">📅</div>
-      <h1 style="margin:6px 0 2px">Attendance Portal</h1>
-      <div class="muted">Login with your credentials</div>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-top">
+      <div class="auth-mark"><svg aria-hidden="true"><use href="#i-cal"/></svg></div>
+      <h1>Attendance Portal</h1>
+      <div class="subtitle">MOHALI OFFICE · sign in to continue</div>
     </div>
-    <form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <label>Username</label>
-      <input name="username" style="width:100%" autofocus required placeholder="e.g. GDSM015" autocapitalize="characters" autocomplete="username">
-      <label>Password</label>
-      <input name="password" type="password" style="width:100%" required>
-      <br><br><button class="btn" style="width:100%;padding:12px">Login</button>
-    </form>
+    <div class="auth-body">
+      <form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label for="username">Username</label>
+        <input id="username" name="username" autofocus required placeholder="e.g. GDSM015"
+               autocapitalize="characters" autocomplete="username" spellcheck="false">
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" required autocomplete="current-password">
+        <button class="btn block" style="margin-top:20px;min-height:44px">Login</button>
+      </form>
+    </div>
+    <div class="auth-foot">
+      Trouble signing in? Contact your office admin.
+    </div>
   </div>
 </div>
 {% endblock %}

@@ -1,12 +1,28 @@
 {% extends "base.html" %}
+{% block title %}Audit log · Attendance Portal{% endblock %}
 {% block content %}
-<h1>🧾 Audit Log (last 300)</h1>
-<div class="card">
-  <table><tr><th>When</th><th>User</th><th>Action</th><th>Detail</th></tr>
-  {% for l in logs %}
-    <tr><td>{{ l.created_at.strftime('%d-%b %H:%M:%S') }}</td><td>{{ l.username }}</td>
-      <td>{{ l.action }}</td><td style="font-size:12px">{{ l.detail }}</td></tr>
-  {% else %}<tr><td colspan="4" class="muted">Empty.</td></tr>{% endfor %}
-  </table>
+<div class="page-head">
+  <div class="titles">
+    <h1>Audit log <span class="chip">last 300</span></h1>
+    <div class="subtitle">Every import, approval, edit and user change is recorded here.</div>
+  </div>
+</div>
+
+<div class="card flush">
+  <div class="table-wrap" style="border:0;border-radius:0">
+    <table>
+      <tr><th>When</th><th>User</th><th>Action</th><th>Detail</th></tr>
+      {% for l in logs %}
+        <tr>
+          <td class="nowrap muted">{{ l.created_at.strftime('%d-%b %H:%M:%S') }}</td>
+          <td class="nowrap">{{ l.username }}</td>
+          <td class="nowrap"><span class="tag mono">{{ l.action }}</span></td>
+          <td class="tiny" style="color:#33405c">{{ l.detail }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="4" class="empty-cell">Nothing logged yet.</td></tr>
+      {% endfor %}
+    </table>
+  </div>
 </div>
 {% endblock %}

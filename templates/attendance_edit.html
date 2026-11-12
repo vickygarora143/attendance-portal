@@ -1,28 +1,51 @@
 {% extends "base.html" %}
+{% block title %}Attendance · {{ emp.name }}{% endblock %}
 {% block content %}
-<h1>🗓 Attendance — {{ emp.name }} ({{ emp.emp_id }}) · {{ '%02d'|format(m) }}-{{ y }}</h1>
-<div class="card">
-  <form method="get" style="display:inline">
-    <input type="month" name="ym" onchange="location='{{ url_for('admin.attendance_edit', eid=emp.id) }}&ym='+this.value">
-  </form>
-  <p class="muted">Use the selector above to change the month. The form below sets each day's code.</p>
-  <form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <table class="cal">
-      <tr>{% for x in days %}<th>{{ x.d }}</th>{% endfor %}</tr>
-      <tr>
-        {% for x in days %}
-          <td class="codecell {{ 'adj' if x.att and x.att.adjusted }}">
-            <select name="d{{ x.d }}" style="width:100%">
-              {% for c in codes %}
-                <option value="{{ c }}" {{ 'selected' if x.att and x.att.code == c }}>{{ c }}</option>
-              {% endfor %}
-            </select>
-          </td>
-        {% endfor %}
-      </tr>
-    </table>
-    <br><button class="btn green">💾 Save Attendance</button>
-    <span class="muted">* = already adjusted / manual (recorded in audit log)</span>
-  </form>
+<div class="page-head">
+  <div class="titles">
+    <h1>{{ emp.name }} <span class="tag mono">{{ emp.emp_id }}</span></h1>
+    <div class="subtitle">Attendance codes for {{ '%02d'|format(m) }}-{{ y }} · edited days are marked as adjusted.</div>
+  </div>
+  <div class="actions">
+    <form method="get">
+      <input type="month" name="ym" value="{{ '%04d-%02d'|format(y, m) }}" style="width:auto;min-width:150px"
+             onchange="location='{{ url_for('admin.attendance_edit', eid=emp.id) }}?ym='+this.value">
+    </form>
+    <a class="btn ghost" href="{{ url_for('admin.employees') }}">Back</a>
+  </div>
+</div>
+
+<div class="card flush">
+  <div class="card-head">
+    <h2 style="margin:0">Day codes</h2>
+    <span class="tiny">P · A · L · H · HD · WO · HO · O · —</span>
+  </div>
+  <div style="padding:12px 14px 16px">
+    <form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="cal-wrap">
+        <table class="cal">
+          <tr>{% for x in days %}<th>{{ x.d }}</th>{% endfor %}</tr>
+          <tr>
+            {% for x in days %}
+              <td class="codecell {{ 'adj' if x.att and x.att.adjusted }}">
+                <select name="d{{ x.d }}" aria-label="Day {{ x.d }}" style="width:100%;min-height:36px;padding:6px 4px;border-radius:0;border:0;text-align:center;font-weight:700">
+                  {% for c in codes %}
+                    <option value="{{ c }}" {{ 'selected' if x.att and x.att.code == c }}>{{ c }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+            {% endfor %}
+          </tr>
+        </table>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn green">
+          <svg aria-hidden="true"><use href="#i-check"/></svg>Save attendance
+        </button>
+        <span class="tiny" style="align-self:center">• = already adjusted / manual (recorded in the audit log)</span>
+      </div>
+    </form>
+  </div>
 </div>
 {% endblock %}

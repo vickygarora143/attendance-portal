@@ -1,16 +1,40 @@
 {% extends "base.html" %}
+{% block title %}My requests · Attendance Portal{% endblock %}
 {% block content %}
-<h1>📨 My Requests</h1>
-<div class="card">
-  <table>
-    <tr><th>Date</th><th>Type</th><th>Reason</th><th>Status</th><th>Admin remark</th><th>Submitted</th></tr>
-    {% for r in reqs %}
-      <tr><td>{{ r.adate.strftime('%d-%b-%Y') }}</td><td>{{ rtypes.get(r.rtype, r.rtype) }}</td>
-        <td>{{ r.reason }}</td>
-        <td><span class="tag status-{{ r.status|upper }}">{{ r.status }}</span></td>
-        <td>{{ r.admin_remark or '-' }}</td>
-        <td>{{ r.created_at.strftime('%d-%b %H:%M') }}</td></tr>
-    {% else %}<tr><td colspan="6" class="muted">No requests yet.</td></tr>{% endfor %}
-  </table>
+<div class="page-head">
+  <div class="titles">
+    <h1>My requests</h1>
+    <div class="subtitle">Everything you have sent to the admin.</div>
+  </div>
+  <div class="actions">
+    <a class="btn ghost" href="{{ url_for('agent.my_attendance') }}">Open calendar</a>
+  </div>
+</div>
+
+<div class="card flush">
+  {% if reqs %}
+  <div class="table-wrap" style="border:0;border-radius:0">
+    <table>
+      <tr><th>Date</th><th>Type</th><th>Reason</th><th>Status</th><th>Admin remark</th><th>Submitted</th></tr>
+      {% for r in reqs %}
+        <tr>
+          <td class="nowrap">{{ r.adate.strftime('%d-%b-%Y') }}</td>
+          <td class="nowrap">{{ rtypes.get(r.rtype, r.rtype) }}</td>
+          <td>{{ r.reason }}</td>
+          <td><span class="tag status-{{ r.status|upper }}">{{ r.status }}</span></td>
+          <td>{{ r.admin_remark or '—' }}</td>
+          <td class="nowrap muted">{{ r.created_at.strftime('%d-%b %H:%M') }}</td>
+        </tr>
+      {% endfor %}
+    </table>
+  </div>
+  {% else %}
+  <div class="empty">
+    <div class="ico"><svg aria-hidden="true"><use href="#i-inbox"/></svg></div>
+    <b>No requests yet</b>
+    <span>Open your calendar and tap a day to raise a regularization request.</span>
+    <a class="btn sm" href="{{ url_for('agent.my_attendance') }}">Open calendar</a>
+  </div>
+  {% endif %}
 </div>
 {% endblock %}

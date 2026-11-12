@@ -1,28 +1,65 @@
 {% extends "base.html" %}
+{% block title %}Dashboard · Attendance Portal{% endblock %}
 {% block content %}
-<h1>{{ off.name }} — Admin Dashboard</h1>
-<div class="cards">
-  <div class="card"><div class="muted">EMPLOYEES</div><div class="big">{{ emps }}</div>
-    <a class="btn sm grey" href="{{ url_for('admin.employees') }}">Manage</a></div>
-  <div class="card"><div class="muted">PENDING REQUESTS</div><div class="big">{{ pending }}</div>
-    <a class="btn sm" href="{{ url_for('admin.requests') }}">Review</a></div>
-  <div class="card"><div class="muted">LAST UPLOAD</div>
-    {% if last_up %}<div style="font-weight:700">{{ last_up.filename }}</div>
-    <div class="muted">{{ last_up.month }} · {{ last_up.created_at.strftime('%d-%b %H:%M') }} · {{ last_up.n_rows }} employees</div>
-    {% else %}<div class="muted">No upload yet</div>{% endif %}
-    <a class="btn sm green" href="{{ url_for('admin.upload') }}">+ Upload Daily Report</a></div>
-  <div class="card"><div class="muted">MONTHLY REPORT</div>
-    <div class="muted">Same 7-sheet Excel format</div>
-    <a class="btn sm" href="{{ url_for('admin.report') }}">Generate / Download</a></div>
+<div class="page-head">
+  <div class="titles">
+    <h1>{{ off.name }} <span class="tag done">Admin</span></h1>
+    <div class="subtitle">Daily biometric attendance, regularization and monthly reports.</div>
+  </div>
+  <div class="actions">
+    <a class="btn green" href="{{ url_for('admin.upload') }}">
+      <svg aria-hidden="true"><use href="#i-upload"/></svg>Upload report
+    </a>
+    <a class="btn ghost" href="{{ url_for('admin.report') }}">
+      <svg aria-hidden="true"><use href="#i-chart"/></svg>Monthly report
+    </a>
+  </div>
 </div>
-<div class="card" style="margin-top:16px">
-  <h2>How to use (daily)</h2>
-  <ol style="font-size:14px;line-height:1.9">
-    <li>Every morning download the <b>biometric report .xls</b> from the device</li>
-    <li><b>Upload</b> → select month → choose file → check preview → <b>Confirm Import</b></li>
-    <li>Agents view their attendance and send a <b>regularization request</b> if something is wrong</li>
-    <li><b>Requests</b> page → approve / reject (with device punch evidence)</li>
-    <li>Month end → <b>Report</b> → Excel download (your usual format)</li>
+
+<div class="cards">
+  <div class="stat">
+    <div class="stat-label"><svg aria-hidden="true"><use href="#i-users"/></svg>Employees</div>
+    <div class="big">{{ emps }}</div>
+    <div class="stat-note">active on the portal</div>
+    <a class="btn sm ghost" href="{{ url_for('admin.employees') }}">Manage</a>
+  </div>
+
+  <div class="stat {{ 'red' if pending else 'green' }}">
+    <div class="stat-label"><svg aria-hidden="true"><use href="#i-inbox"/></svg>Pending requests</div>
+    <div class="big">{{ pending }}</div>
+    <div class="stat-note">{{ 'waiting for your decision' if pending else 'nothing pending' }}</div>
+    <a class="btn sm {{ 'red' if pending else 'ghost' }}" href="{{ url_for('admin.requests') }}">Review</a>
+  </div>
+
+  <div class="stat">
+    <div class="stat-label"><svg aria-hidden="true"><use href="#i-file"/></svg>Last upload</div>
+    {% if last_up %}
+      <div class="big" style="font-size:15px;letter-spacing:0">{{ last_up.month }}</div>
+      <div class="stat-note">{{ last_up.filename }} · {{ last_up.created_at.strftime('%d-%b %H:%M') }}</div>
+      <div class="stat-note">{{ last_up.n_rows }} employees in file</div>
+    {% else %}
+      <div class="big" style="font-size:15px;letter-spacing:0">No upload yet</div>
+      <div class="stat-note">start with the device export</div>
+    {% endif %}
+    <a class="btn sm ghost" href="{{ url_for('admin.upload') }}">Upload</a>
+  </div>
+
+  <div class="stat">
+    <div class="stat-label"><svg aria-hidden="true"><use href="#i-chart"/></svg>Monthly report</div>
+    <div class="big" style="font-size:15px;letter-spacing:0">7-sheet Excel</div>
+    <div class="stat-note">same format as before</div>
+    <a class="btn sm ghost" href="{{ url_for('admin.report') }}">Generate</a>
+  </div>
+</div>
+
+<div class="card">
+  <h2><svg aria-hidden="true" style="width:15px;height:15px"><use href="#i-clock"/></svg>Daily routine</h2>
+  <ol class="howto">
+    <li>Download the <b>biometric report .xls</b> from the device every morning.</li>
+    <li><b>Upload</b> → pick the month → choose the file → check the preview → <b>Confirm import</b>.</li>
+    <li>Agents check their calendar and send a <b>regularization request</b> if something looks wrong.</li>
+    <li>Open <b>Requests</b> → approve or reject with the device punch evidence in front of you.</li>
+    <li>At month end → <b>Report</b> → download the Excel (7 sheets).</li>
   </ol>
 </div>
 {% endblock %}

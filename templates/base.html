@@ -1,43 +1,132 @@
 <!doctype html>
-<html lang="en"><head>
+<html lang="en">
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#1e2a4a">
-<title>Attendance Portal</title>
+<meta name="theme-color" content="#2f6bff">
+<meta name="color-scheme" content="light">
+<title>{% block title %}Attendance Portal{% endblock %}</title>
+<link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head><body>
-<nav>
-  <span class="brand">📅 Attendance Portal</span>
-  {% set u = g.u %}
-  {% if u %}
-    {% if u.role == 'super_admin' %}
-      <a href="{{ url_for('super.home') }}">🏢 Offices</a>
-      <a href="{{ url_for('super.users') }}">👤 Users</a>
-      <a href="{{ url_for('super.audit_log') }}">🧾 Audit</a>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M8 2v4M16 2v4M3 10h18"/><path d="M9 15h2M13 15h2"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9.5 21v-6h5v6"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></symbol>
+  <symbol id="i-inbox" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h5l2 3h4l2-3h5"/><path d="M5 5h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16.5 5.3a3.2 3.2 0 0 1 0 6.2"/><path d="M17.5 14.2A6.2 6.2 0 0 1 21.5 20"/></symbol>
+  <symbol id="i-wallet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="14" rx="3"/><path d="M2.5 10h19"/><circle cx="17" cy="15" r="1.2"/><path d="M6 6V5a2 2 0 0 1 2-2h8"/></symbol>
+  <symbol id="i-gift" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M3 12h18M12 8v13"/><path d="M12 8S9.5 3 7.5 4.5 9 8 12 8zM12 8s2.5-5 4.5-3.5S15 8 12 8z"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2"/><path d="M10 21v-2h4v2"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.4 8-8 9-4.6-1-8-4-8-9V6l8-3z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="4"/><path d="m11 11 9 9M17 17l2-2M20 20l1.5-1.5"/></symbol>
+  <symbol id="i-out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M10 8l-4 4 4 4M6 12h9"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12.5 5 5L20 6.5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2.5 20h19L12 3z"/><path d="M12 9v5M12 17.5v.5"/></symbol>
+</svg>
+
+{% set u = g.u %}
+{% macro nl(ep, icon, label, extra='') -%}
+  {%- set active = request.endpoint == ep or (extra and request.endpoint in extra.split(',')) -%}
+  <a class="nav-link {{ 'active' if active }}" href="{{ url_for(ep) }}">
+    <svg aria-hidden="true"><use href="#i-{{ icon }}"/></svg>{{ label }}
+  </a>
+{%- endmacro %}
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="{{ url_for('auth.home') if u else url_for('auth.login') }}">
+      <span class="logo"><svg aria-hidden="true"><use href="#i-cal"/></svg></span>
+      <span>
+        <span class="brand-text">Attendance<b>Portal</b></span>
+        <span class="brand-sub">MOHALI OFFICE</span>
+      </span>
+    </a>
+
+    {% if u %}
+    <nav class="nav" aria-label="Main">
+      {% if u.role == 'super_admin' %}
+        {{ nl('super.home', 'building', 'Offices') }}
+        {{ nl('super.users', 'user', 'Users') }}
+        {{ nl('super.audit_log', 'shield', 'Audit') }}
+      {% endif %}
+      {% if u.role in ('admin', 'super_admin') %}
+        {{ nl('admin.dashboard', 'home', 'Dashboard') }}
+        {{ nl('admin.upload', 'upload', 'Upload', 'admin.preview') }}
+        <a class="nav-link {{ 'active' if request.endpoint in ('admin.requests',) }}" href="{{ url_for('admin.requests') }}">
+          <svg aria-hidden="true"><use href="#i-inbox"/></svg>Requests
+          {% if g.pend %}<span class="badge">{{ g.pend }}</span>{% endif %}
+        </a>
+        {{ nl('admin.employees', 'users', 'Employees', 'admin.employee_form,admin.employees_import,admin.attendance_edit') }}
+        {{ nl('admin.salary', 'wallet', 'Salary') }}
+        {{ nl('admin.holidays', 'gift', 'Holidays') }}
+        {{ nl('admin.report', 'chart', 'Report') }}
+      {% endif %}
+      {% if u.role == 'agent' %}
+        {{ nl('agent.my_attendance', 'cal', 'My Attendance', 'agent.my_day') }}
+        {{ nl('agent.my_requests', 'inbox', 'My Requests') }}
+      {% endif %}
+    </nav>
+
+    <div class="user">
+      <span class="who" title="{{ u.username }}">
+        <span class="who-name">{{ u.username }}</span>
+        <span class="who-role">{{ u.employee.designation if u.employee and u.employee.designation else u.role.replace('_', ' ') }}</span>
+      </span>
+      <a class="icon-btn" href="{{ url_for('auth.change_password') }}" title="Change password" aria-label="Change password">
+        <svg aria-hidden="true"><use href="#i-key"/></svg>
+      </a>
+      <a class="btn ghost sm" href="{{ url_for('auth.logout') }}" title="Logout">
+        <svg aria-hidden="true"><use href="#i-out"/></svg>Logout
+      </a>
+    </div>
     {% endif %}
-    {% if u.role in ('admin', 'super_admin') %}
-      <a href="{{ url_for('admin.dashboard') }}">🏠 Dashboard</a>
-      <a href="{{ url_for('admin.upload') }}">⬆️ Upload</a>
-      <a href="{{ url_for('admin.requests') }}">📝 Requests {% if g.pend %}<span class="badge">{{ g.pend }}</span>{% endif %}</a>
-      <a href="{{ url_for('admin.employees') }}">👥 Employees</a>
-      <a href="{{ url_for('admin.salary') }}">💰 Salary</a>
-      <a href="{{ url_for('admin.holidays') }}">🎄 Holidays</a>
-      <a href="{{ url_for('admin.report') }}">📊 Report</a>
-    {% endif %}
-    {% if u.role == 'agent' %}
-      <a href="{{ url_for('agent.my_attendance') }}">📋 My Attendance</a>
-      <a href="{{ url_for('agent.my_requests') }}">📨 My Requests</a>
-    {% endif %}
-    <span class="right"><span class="who">{{ u.username }} · {{ (u.employee.designation if u.employee and u.employee.designation else u.role.replace('_',' ')) }}</span>
-      <a href="{{ url_for('auth.change_password') }}">🔑 Password</a>
-      <a href="{{ url_for('auth.logout') }}">Logout →</a></span>
-  {% endif %}
-</nav>
-<div class="container">
+  </div>
+</header>
+
+<main id="main" class="container">
   {% with msgs = get_flashed_messages(with_categories=true) %}
-    {% for cat, msg in msgs %}<div class="flash {{ cat }}">{{ msg }}</div>{% endfor %}
+    {% if msgs %}
+    <div class="toasts" id="toasts">
+      {% for cat, msg in msgs %}
+        <div class="toast {{ cat }}">
+          <span class="dot"></span>
+          <span>{{ msg }}</span>
+          <button class="x" type="button" aria-label="Dismiss">&times;</button>
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
   {% endwith %}
+
   {% block content %}{% endblock %}
-</div>
-<footer>Lite mode · no heavy assets · works on slow internet</footer>
-</body></html>
+</main>
+
+<footer>
+  Attendance Portal <span class="dotsep">·</span> Lite mode <span class="dotsep">·</span> works on slow internet
+</footer>
+
+<script>
+(function () {
+  var box = document.getElementById('toasts');
+  if (!box) return;
+  function kill(t) {
+    t.classList.add('out');
+    setTimeout(function () { t.remove(); if (!box.children.length) box.remove(); }, 260);
+  }
+  Array.prototype.forEach.call(box.children, function (t) {
+    t.querySelector('.x').addEventListener('click', function () { kill(t); });
+    setTimeout(function () { if (t.parentNode) kill(t); }, 6500);
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,46 +1,89 @@
 {% extends "base.html" %}
+{% block title %}My attendance · Attendance Portal{% endblock %}
 {% block content %}
 {% if not emp %}
-  <div class="flash danger">Your profile is not linked to an employee — contact your admin.</div>
+  <div class="card">
+    <div class="empty">
+      <div class="ico"><svg aria-hidden="true"><use href="#i-alert"/></svg></div>
+      <b>Profile not linked</b>
+      <span>Your login is not linked to an employee record. Please contact your admin.</span>
+    </div>
+  </div>
 {% else %}
-<h1>📋 {{ emp.name }} <span class="tag c-P" style="vertical-align:middle">{{ emp.emp_id }}</span></h1>
-<div class="muted" style="margin:-8px 0 12px">
-  {{ emp.designation or 'Staff' }}{% if emp.zone %} · {{ emp.zone }}{% endif %} ·
-  attendance for {{ '%02d'|format(m) }}-{{ y }}
-</div>
-<div class="card">
-  <form method="get" action="{{ url_for('agent.my_attendance') }}">
-    <input type="month" name="ym" value="{{ '%04d-%02d'|format(y, m) }}"
-           onchange="location='{{ url_for('agent.my_attendance') }}?ym='+this.value">
-  </form>
-  <div class="cal-wrap" style="margin-top:10px">
-  <table class="cal">
-    <tr>{% for x in days %}<th>{{ x.d }}</th>{% endfor %}</tr>
-    <tr class="wdrow">{% for x in days %}<td>{{ x.wd }}</td>{% endfor %}</tr>
-    <tr>{% for x in days %}
-      <td class="codecell c-{{ x.code }} {{ 'adj' if x.adjusted }}">
-        <a href="{{ url_for('agent.my_day', y=y, m=m, d=x.d) }}">{{ x.code }}</a>
-      </td>{% endfor %}</tr>
-    <tr>{% for x in days %}<td style="font-size:10px;color:#6b7688">{{ x.in or '' }}{% if x.out %}<br>{{ x.out }}{% endif %}</td>{% endfor %}</tr>
-  </table>
+
+<div class="page-head">
+  <div class="titles">
+    <h1>{{ emp.name }}
+      <span class="tag mono c-P">{{ emp.emp_id }}</span>
+    </h1>
+    <div class="subtitle">
+      {{ emp.designation or 'Staff' }}{% if emp.zone %} · {{ emp.zone }}{% endif %}
+      · attendance for {{ '%02d'|format(m) }}-{{ y }}
+    </div>
   </div>
-  <div class="legend">
-    <span class="c-P">P Present</span><span class="c-L">L Late</span><span class="c-A">A Absent</span>
-    <span class="c-H">H Half-day</span><span class="c-WO">WO Weekly-off</span>
-    <span class="c-HO">HO Holiday</span><span class="c-O">O Comp-off</span>
-    <span style="background:#fff;border:1px solid #e3e8f0">* Adjusted</span>
+  <div class="actions">
+    <form method="get" action="{{ url_for('agent.my_attendance') }}">
+      <input type="month" name="ym" value="{{ '%04d-%02d'|format(y, m) }}"
+             style="width:auto;min-width:150px"
+             onchange="location='{{ url_for('agent.my_attendance') }}?ym='+this.value">
+    </form>
   </div>
-  <p class="muted" style="margin-top:6px">Click any day to open details and the
-  <b>regularization request</b> form.</p>
 </div>
+
 <div class="cards">
-  <div class="card"><div class="muted">PRESENT</div><div class="big">{{ summ.P }}</div>
-    <div class="muted">{{ summ.waived }} waived late included</div></div>
-  <div class="card"><div class="muted">ABSENT</div><div class="big" style="color:var(--red)">{{ summ.A }}</div></div>
-  <div class="card"><div class="muted">LATE</div><div class="big" style="color:var(--orange)">{{ summ.L }}</div>
-    <div class="muted">first {{ emp.office.waiver if emp.office else 4 }} waived{% if summ.deduct %} · {{ summ.deduct }} deducted (×1/6){% endif %}</div></div>
-  <div class="card"><div class="muted">HALF-DAY</div><div class="big" style="color:var(--amber)">{{ summ.H }}</div></div>
-  <div class="card"><div class="muted">WO / HO / O</div><div class="big">{{ summ.WO }} / {{ summ.HO }} / {{ summ.O }}</div></div>
+  <div class="stat green">
+    <div class="stat-label"><svg aria-hidden="true"><use href="#i-check"/></svg>Present</div>
+    <div class="big">{{ summ.P }}</div>
+    <div class="stat-note">{{ summ.waived }} waived late included</div>
+  </div>
+  <div class="stat red">
+    <div class="stat-label"><svg aria-hidden="true"><use href="#i-x"/></svg>Absent</div>
+    <div class="big">{{ summ.A }}</div>
+    <div class="stat-note">days marked A</div>
+  </div>
+  <div class="stat orange">
+    <div class="stat-label"><svg aria-hidden="true"><use href="#i-clock"/></svg>Late</div>
+    <div class="big">{{ summ.L }}</div>
+    <div class="stat-note">first {{ emp.office.waiver if emp.office else 4 }} waived{% if summ.deduct %} · {{ summ.deduct }} deducted (×1/6){% endif %}</div>
+  </div>
+  <div class="stat amber">
+    <div class="stat-label"><svg aria-hidden="true"><use href="#i-cal"/></svg>Half-day</div>
+    <div class="big">{{ summ.H }}</div>
+    <div class="stat-note">short day / half punch</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label"><svg aria-hidden="true"><use href="#i-gift"/></svg>WO / HO / O</div>
+    <div class="big" style="font-size:22px">{{ summ.WO }} / {{ summ.HO }} / {{ summ.O }}</div>
+    <div class="stat-note">weekly off / holiday / comp-off</div>
+  </div>
+</div>
+
+<div class="card flush">
+  <div class="card-head">
+    <h2 style="margin:0"><svg aria-hidden="true" style="width:15px;height:15px"><use href="#i-cal"/></svg>Calendar</h2>
+    <span class="tiny">Tap a day for details</span>
+  </div>
+  <div style="padding:12px 14px 14px">
+    <div class="cal-wrap">
+      <table class="cal">
+        <tr>{% for x in days %}<th>{{ x.d }}</th>{% endfor %}</tr>
+        <tr class="wdrow">{% for x in days %}<td>{{ x.wd }}</td>{% endfor %}</tr>
+        <tr>{% for x in days %}
+          <td class="codecell c-{{ x.code }} {{ 'adj' if x.adjusted }}">
+            <a href="{{ url_for('agent.my_day', y=y, m=m, d=x.d) }}" title="{{ x.code }}">{{ x.code }}</a>
+          </td>{% endfor %}</tr>
+        <tr>{% for x in days %}<td class="times">{{ x.in or '' }}{% if x.out %}<br>{{ x.out }}{% endif %}</td>{% endfor %}</tr>
+      </table>
+    </div>
+    <div class="legend">
+      <span class="c-P">P Present</span><span class="c-L">L Late</span><span class="c-A">A Absent</span>
+      <span class="c-H">H Half-day</span><span class="c-WO">WO Weekly-off</span>
+      <span class="c-HO">HO Holiday</span><span class="c-O">O Comp-off</span>
+      <span style="background:#fff;border:1px solid #e3e8f0;color:#66738c">• Adjusted</span>
+    </div>
+    <p class="muted" style="margin-top:10px">Click any day to open the details and the
+      <b>regularization request</b> form.</p>
+  </div>
 </div>
 {% endif %}
 {% endblock %}

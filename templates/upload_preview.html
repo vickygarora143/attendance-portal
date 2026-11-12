@@ -1,30 +1,87 @@
 {% extends "base.html" %}
+{% block title %}Upload preview · Attendance Portal{% endblock %}
 {% block content %}
-<h1>Preview — {{ up.filename }} ({{ up.month }})</h1>
-<div class="card">
-  <b>{{ known|length }}</b> employees matched · <b>{{ unknown|length }}</b> unknown device IDs
-  <table style="margin-top:10px">
-    <tr><th>Device ID</th><th>Name</th><th>Days</th><th>Present/WOP</th><th>Lates</th><th>Status</th></tr>
-    {% for r in known %}
-      <tr><td>{{ r.code }}</td><td>{{ r.name }}</td><td>{{ r.ndays }}</td>
-        <td>{{ r.present }}</td><td>{{ r.lates }}</td><td style="color:#0a6b2d">✓ matched</td></tr>
-    {% endfor %}
-    {% for r in unknown %}
-      <tr><td>{{ r.code }}</td><td>{{ r.name }}</td><td>{{ r.ndays }}</td>
-        <td>{{ r.present }}</td><td>{{ r.lates }}</td>
-        <td style="color:#c00000">✗ not in Employees — <a href="{{ url_for('admin.employee_form') }}">add</a> (ID: {{ r.code }})</td></tr>
-    {% endfor %}
-  </table>
+<div class="page-head">
+  <div class="titles">
+    <h1>Preview import</h1>
+    <div class="subtitle">{{ up.filename }} · {{ up.month }}</div>
+  </div>
+  <div class="actions">
+    <a class="btn ghost" href="{{ url_for('admin.upload') }}">Back to upload</a>
+  </div>
 </div>
+
+<div class="cards">
+  <div class="stat green">
+    <div class="stat-label"><svg aria-hidden="true"><use href="#i-check"/></svg>Matched</div>
+    <div class="big">{{ known|length }}</div>
+    <div class="stat-note">device IDs found in Employees</div>
+  </div>
+  <div class="stat {{ 'red' if unknown else '' }}">
+    <div class="stat-label"><svg aria-hidden="true"><use href="#i-alert"/></svg>Unknown IDs</div>
+    <div class="big">{{ unknown|length }}</div>
+    <div class="stat-note">{{ 'add them before importing' if unknown else 'all IDs matched' }}</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label"><svg aria-hidden="true"><use href="#i-file"/></svg>Month</div>
+    <div class="big" style="font-size:20px;letter-spacing:0">{{ up.month }}</div>
+    <div class="stat-note">{{ '%02d:%02d'|format(off.late_after//60, off.late_after%60) }} late cut-off</div>
+  </div>
+</div>
+
+<div class="card flush">
+  <div class="card-head">
+    <h2 style="margin:0">Parsed employees</h2>
+    <span class="tiny">Rows are grouped by device ID</span>
+  </div>
+  <div class="table-wrap" style="border:0;border-radius:0">
+    <table>
+      <tr><th>Device ID</th><th>Name</th><th class="num">Days</th><th class="num">Present / WOP</th><th class="num">Lates</th><th>Status</th></tr>
+      {% for r in known %}
+        <tr>
+          <td class="nowrap"><span class="tag mono">{{ r.code }}</span></td>
+          <td class="nowrap">{{ r.name }}</td>
+          <td class="num">{{ r.ndays }}</td>
+          <td class="num">{{ r.present }}</td>
+          <td class="num">{{ r.lates }}</td>
+          <td><span class="tag done">Matched</span></td>
+        </tr>
+      {% endfor %}
+      {% for r in unknown %}
+        <tr>
+          <td class="nowrap"><span class="tag mono">{{ r.code }}</span></td>
+          <td class="nowrap">{{ r.name }}</td>
+          <td class="num">{{ r.ndays }}</td>
+          <td class="num">{{ r.present }}</td>
+          <td class="num">{{ r.lates }}</td>
+          <td class="nowrap">
+            <span class="tag fail">Not in Employees</span>
+            <a class="btn-link" href="{{ url_for('admin.employee_form') }}">Add {{ r.code }}</a>
+          </td>
+        </tr>
+      {% endfor %}
+      {% if not known and not unknown %}
+        <tr><td colspan="6" class="empty-cell">No employee blocks found in this file.</td></tr>
+      {% endif %}
+    </table>
+  </div>
+</div>
+
 <div class="card">
   <form method="post" action="{{ url_for('admin.confirm', uid=up.id) }}" style="display:inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <button class="btn green">✅ Confirm Import</button>
+    <button class="btn green">
+      <svg aria-hidden="true"><use href="#i-check"/></svg>Confirm import
+    </button>
   </form>
   <form method="post" action="{{ url_for('admin.discard', uid=up.id) }}" style="display:inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <button class="btn red">❌ Discard</button>
+    <button class="btn red">
+      <svg aria-hidden="true"><use href="#i-x"/></svg>Discard
+    </button>
   </form>
-  <p class="muted">On confirm: all day-records of matched employees will be imported
-  (rules: first IN after {{ '%02d:%02d'|format(off.late_after//60, off.late_after%60) }} = L, WOP = O,
-  device A on holiday = HO). Days already adjusted manually will not be overwritten.</p>
+  <p class="muted" style="margin-top:12px">
+    On confirm: all day-records of matched employees are imported
+    (first IN after {{ '%02d:%02d'|format(off.late_after//60, off.late_after%60) }} = L, WOP = O,
+    device A on a holiday = HO). Days already adjusted manually are never overwritten.
+  </p>
 </div>
 {% endblock %}

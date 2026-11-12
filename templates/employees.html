@@ -1,16 +1,55 @@
 {% extends "base.html" %}
+{% block title %}Employees · Attendance Portal{% endblock %}
 {% block content %}
-<h1>👥 Employees <a class="btn sm" style="float:right" href="{{ url_for('admin.employees_import') }}">📥 Import from Excel</a> <a class="btn sm green" style="float:right" href="{{ url_for('admin.employee_form') }}">+ Add Employee</a></h1>
-<div class="card">
-  <table>
-    <tr><th>Emp ID</th><th>Name</th><th>Designation</th><th>Zone</th><th>DOJ</th><th>Gross</th><th>On device</th><th>Status</th><th></th></tr>
-    {% for e in emps %}
-      <tr><td>{{ e.emp_id }}</td><td>{{ e.name }}</td><td>{{ e.designation or '-' }}</td>
-        <td>{{ e.zone or '-' }}</td><td>{{ e.doj or '-' }}</td><td>{{ e.gross or '-' }}</td>
-        <td>{{ '✓' if e.device_enrolled else '✗' }}</td><td>{{ e.status }}</td>
-        <td><a class="btn sm" href="{{ url_for('admin.employee_form', eid=e.id) }}">Edit</a>
-            <a class="btn sm grey" href="{{ url_for('admin.attendance_edit', eid=e.id) }}">Attendance</a></td></tr>
-    {% else %}<tr><td colspan="9" class="muted">No employees yet — run the seed script or use Add Employee.</td></tr>{% endfor %}
-  </table>
+<div class="page-head">
+  <div class="titles">
+    <h1>Employees <span class="chip">{{ emps|length }} total</span></h1>
+    <div class="subtitle">Employee master data and salary (salary is admin-only).</div>
+  </div>
+  <div class="actions">
+    <a class="btn ghost" href="{{ url_for('admin.employees_import') }}">
+      <svg aria-hidden="true"><use href="#i-upload"/></svg>Import from Excel
+    </a>
+    <a class="btn green" href="{{ url_for('admin.employee_form') }}">
+      <svg aria-hidden="true"><use href="#i-users"/></svg>Add employee
+    </a>
+  </div>
+</div>
+
+<div class="card flush">
+  <div class="card-head">
+    <h2 style="margin:0">All employees</h2>
+    <span class="tiny">Scroll sideways for more columns</span>
+  </div>
+  <div class="table-wrap" style="border:0;border-radius:0">
+    <table>
+      <tr>
+        <th>Emp ID</th><th>Name</th><th>Designation</th>
+        <th class="hide-md">Zone</th><th class="hide-md">DOJ</th><th class="num hide-md">Gross</th>
+        <th>On device</th><th>Status</th><th></th>
+      </tr>
+      {% for e in emps %}
+        <tr>
+          <td class="nowrap"><span class="tag mono">{{ e.emp_id }}</span></td>
+          <td class="nowrap">{{ e.name }}</td>
+          <td class="nowrap">{{ e.designation or '—' }}</td>
+          <td class="nowrap hide-md">{{ e.zone or '—' }}</td>
+          <td class="nowrap hide-md">{{ e.doj or '—' }}</td>
+          <td class="num hide-md">{{ '{:,.0f}'.format(e.gross) if e.gross else '—' }}</td>
+          <td>
+            {% if e.device_enrolled %}<span class="tag done">Yes</span>
+            {% else %}<span class="tag fail">No</span>{% endif %}
+          </td>
+          <td class="nowrap"><span class="tag {{ 'done' if e.status == 'ACTIVE' else 'status-discarded' }}">{{ e.status }}</span></td>
+          <td class="nowrap">
+            <a class="btn sm ghost" href="{{ url_for('admin.employee_form', eid=e.id) }}">Edit</a>
+            <a class="btn sm ghost" href="{{ url_for('admin.attendance_edit', eid=e.id) }}">Attendance</a>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="9" class="empty-cell">No employees yet — use Add employee or Import from Excel.</td></tr>
+      {% endfor %}
+    </table>
+  </div>
 </div>
 {% endblock %}

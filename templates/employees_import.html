@@ -1,30 +1,38 @@
 {% extends "base.html" %}
+{% block title %}Import employees · Attendance Portal{% endblock %}
 {% block content %}
-<h1>📥 Import Employees from Excel</h1>
-<div class="card">
-  <p class="muted">Upload the monthly <b>manual attendance .xlsx</b> (same file you used for
-  October). It creates/updates employee records with designation, DOJ, zone, gross and all
-  salary fields, and creates a portal login for each employee (username = Emp ID,
-  password = <b>welcome123</b>).<br>
-  Existing employees (same Emp ID) are <b>updated</b> — never duplicated. You can re-upload
-  every month to refresh salary values.</p>
+<div class="page-head">
+  <div class="titles">
+    <h1>Import employees from Excel</h1>
+    <div class="subtitle">Creates or updates employee records and agent logins in one step.</div>
+  </div>
+  <div class="actions">
+    <a class="btn ghost" href="{{ url_for('admin.employees') }}">Back to employees</a>
+  </div>
+</div>
+
+<div class="card" style="max-width:720px">
   {% if done %}
-    <div class="flash success">{{ done }}</div>
-    <a class="btn" href="{{ url_for('admin.employees') }}">← Back to Employees</a>
+    <div class="flash success" style="margin-bottom:14px">{{ done }}</div>
+    <a class="btn" href="{{ url_for('admin.employees') }}">Back to employees</a>
   {% else %}
-    <form method="post" enctype="multipart/form-data" style="margin-top:12px"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <div class="form-row">
-        <div>
-          <label>Manual attendance .xlsx</label>
-          <input type="file" name="file" accept=".xlsx" required>
-        </div>
-        <div style="align-self:flex-end">
-          <button class="btn" type="submit">Import</button>
-        </div>
+    <ol class="howto" style="margin-bottom:16px">
+      <li>Use the monthly <b>manual attendance .xlsx</b> (same file as October).</li>
+      <li>Sheet must be named <b>Sheet1</b> — header on row 1, data from row 2.</li>
+      <li>Existing employees (same Emp ID) are <b>updated</b>, never duplicated.</li>
+      <li>A portal login is created for every employee: username = <b>Emp ID</b>, password = <b>welcome123</b>.</li>
+      <li>Re-upload every month to refresh salary values.</li>
+    </ol>
+
+    <form method="post" enctype="multipart/form-data"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label for="file">Manual attendance .xlsx</label>
+      <input id="file" type="file" name="file" accept=".xlsx" required>
+      <div class="form-actions">
+        <button class="btn" type="submit">
+          <svg aria-hidden="true"><use href="#i-upload"/></svg>Import employees
+        </button>
       </div>
     </form>
-    <p class="muted" style="margin-top:10px">File must be .xlsx with the data on a sheet
-    named <b>Sheet1</b> (header row 1, data from row 2).</p>
   {% endif %}
 </div>
 {% endblock %}

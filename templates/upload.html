@@ -1,27 +1,55 @@
 {% extends "base.html" %}
+{% block title %}Upload biometric report · Attendance Portal{% endblock %}
 {% block content %}
-<h1>⬆️ Upload Daily Biometric Report</h1>
-<div class="card" style="max-width:560px">
-  <form method="post" enctype="multipart/form-data"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <label>Month of this data</label>
-    <input type="month" name="month" required>
-    <label>Biometric .xls file</label>
-    <input type="file" name="file" accept=".xls,.xlsx" required>
-    <br><br><button class="btn green">Parse & Preview</button>
-  </form>
-  <p class="muted">Use the original device export (Emp. Code block format).
-  It is parsed and shown as a <b>preview</b> first — data imports only after you confirm.</p>
+<div class="page-head">
+  <div class="titles">
+    <h1>Upload daily biometric report</h1>
+    <div class="subtitle">Parse the device export, check the preview, then confirm the import.</div>
+  </div>
 </div>
-{% if uploads is defined %}{% endif %}
-<div class="card">
-  <h2>Recent uploads</h2>
-  <table><tr><th>File</th><th>Month</th><th>Status</th><th>Employees</th><th>When</th><th></th></tr>
-  {% for u in ups %}
-    <tr><td>{{ u.filename }}</td><td>{{ u.month }}</td>
-      <td><span class="tag status-{{ u.status|upper }}">{{ u.status }}</span></td>
-      <td>{{ u.n_rows }}</td><td>{{ u.created_at.strftime('%d-%b %H:%M') }}</td>
-      <td>{% if u.status == 'preview' %}<a class="btn sm" href="{{ url_for('admin.preview', uid=u.id) }}">Open preview</a>{% endif %}</td></tr>
-  {% else %}<tr><td colspan="6" class="muted">No uploads yet.</td></tr>{% endfor %}
-  </table>
+
+<div class="card" style="max-width:620px">
+  <form method="post" enctype="multipart/form-data"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="month">Month of this data</label>
+    <input id="month" type="month" name="month" required>
+
+    <label for="file">Biometric .xls file</label>
+    <input id="file" type="file" name="file" accept=".xls,.xlsx" required>
+    <div class="hint">Use the original device export (Emp. Code block format). Nothing is imported until you confirm the preview.</div>
+
+    <div class="form-actions">
+      <button class="btn green">
+        <svg aria-hidden="true"><use href="#i-upload"/></svg>Parse &amp; preview
+      </button>
+    </div>
+  </form>
+</div>
+
+<div class="card flush">
+  <div class="card-head">
+    <h2 style="margin:0">Recent uploads</h2>
+    <span class="tiny">Last 10 files</span>
+  </div>
+  <div class="table-wrap" style="border:0;border-radius:0">
+    <table>
+      <tr><th>File</th><th>Month</th><th>Status</th><th class="num">Employees</th><th>When</th><th></th></tr>
+      {% for u in ups %}
+        <tr>
+          <td class="nowrap">{{ u.filename }}</td>
+          <td class="nowrap">{{ u.month }}</td>
+          <td><span class="tag status-{{ u.status|upper }}">{{ u.status }}</span></td>
+          <td class="num">{{ u.n_rows }}</td>
+          <td class="nowrap muted">{{ u.created_at.strftime('%d-%b %H:%M') }}</td>
+          <td class="nowrap">
+            {% if u.status == 'preview' %}
+              <a class="btn sm" href="{{ url_for('admin.preview', uid=u.id) }}">Open preview</a>
+            {% endif %}
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6" class="empty-cell">No uploads yet.</td></tr>
+      {% endfor %}
+    </table>
+  </div>
 </div>
 {% endblock %}

@@ -1,14 +1,35 @@
 {% extends "base.html" %}
+{% block title %}Offices · Attendance Portal{% endblock %}
 {% block content %}
-<h1>🏢 Offices <a class="btn sm green" style="float:right" href="{{ url_for('super.office_form') }}">+ Add Office</a></h1>
-<div class="card">
-  <table><tr><th>Code</th><th>Name</th><th>Late after</th><th>Waiver</th><th>Employees</th><th></th></tr>
-  {% for o in offs %}
-    <tr><td>{{ o.code }}</td><td>{{ o.name }}</td>
-      <td>{{ '%02d:%02d'|format(o.late_after//60, o.late_after%60) }}</td>
-      <td>{{ o.waiver }} lates</td><td>{{ counts[o.id] }}</td>
-      <td><a class="btn sm" href="{{ url_for('super.office_form', oid=o.id) }}">Edit</a></td></tr>
-  {% else %}<tr><td colspan="6" class="muted">No offices yet — add the first office.</td></tr>{% endfor %}
-  </table>
+<div class="page-head">
+  <div class="titles">
+    <h1>Offices <span class="chip">{{ offs|length }} total</span></h1>
+    <div class="subtitle">Each office carries its own attendance rules.</div>
+  </div>
+  <div class="actions">
+    <a class="btn green" href="{{ url_for('super.office_form') }}">
+      <svg aria-hidden="true"><use href="#i-building"/></svg>Add office
+    </a>
+  </div>
+</div>
+
+<div class="card flush">
+  <div class="table-wrap" style="border:0;border-radius:0">
+    <table>
+      <tr><th>Code</th><th>Name</th><th>Late after</th><th>Late waiver</th><th class="num">Employees</th><th></th></tr>
+      {% for o in offs %}
+        <tr>
+          <td class="nowrap"><span class="tag mono">{{ o.code }}</span></td>
+          <td class="nowrap">{{ o.name }}</td>
+          <td class="nowrap">{{ '%02d:%02d'|format(o.late_after//60, o.late_after%60) }}</td>
+          <td class="nowrap">first {{ o.waiver }} lates</td>
+          <td class="num">{{ counts[o.id] }}</td>
+          <td class="nowrap"><a class="btn sm ghost" href="{{ url_for('super.office_form', oid=o.id) }}">Edit</a></td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6" class="empty-cell">No offices yet — add the first office.</td></tr>
+      {% endfor %}
+    </table>
+  </div>
 </div>
 {% endblock %}

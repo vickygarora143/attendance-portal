@@ -1,46 +1,88 @@
 {% extends "base.html" %}
+{% block title %}Requests · Attendance Portal{% endblock %}
 {% block content %}
-<h1>📝 Regularization Requests</h1>
+<div class="page-head">
+  <div class="titles">
+    <h1>Regularization requests
+      {% if pend %}<span class="tag status-PENDING">{{ pend|length }} pending</span>{% endif %}
+    </h1>
+    <div class="subtitle">Approve or reject with the device punch evidence in front of you.</div>
+  </div>
+</div>
+
 <div class="card">
-  <h2>Pending ({{ pend|length }})</h2>
+  <h2><svg aria-hidden="true" style="width:15px;height:15px"><use href="#i-clock"/></svg>Pending ({{ pend|length }})</h2>
   {% for r in pend %}
     {% set p, a = ev[r.id] %}
-    <div style="border:1px solid #dde3ea;border-radius:6px;padding:10px 14px;margin:10px 0">
-      <b>{{ r.employee.name }}</b> ({{ r.employee.emp_id }}) — {{ r.adate.strftime('%d-%b-%Y (%a)') }}
-      <span class="tag status-PENDING">{{ r.rtype }}</span>
-      <div style="font-size:13px;margin:6px 0"><b>Reason:</b> {{ r.reason }}</div>
-      <div style="font-size:13px" class="muted">
-        Current code: <b>{{ r.current_code }}</b> ·
-        Device: status={{ p.status if p else '-' }}, IN={{ p.in_time if p else '-' }},
-        OUT={{ p.out_time if p else '-' }} ·
-        Suggested: <b>{{ r.requested_code }}</b>
+    <div class="req-card">
+      <div class="req-top">
+        <span class="req-name">{{ r.employee.name }}</span>
+        <span class="tag mono">{{ r.employee.emp_id }}</span>
+        <span class="req-meta">{{ r.adate.strftime('%d-%b-%Y (%a)') }}</span>
+        <span class="tag status-PENDING">{{ r.rtype }}</span>
       </div>
-      <form method="post" action="{{ url_for('admin.decide', rid=r.id) }}" class="form-row" style="margin-top:8px"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <div>
-          <label>Approve as code</label>
-          <select name="set_code">
+      <div style="font-size:13px;color:#33405c"><b>Reason:</b> {{ r.reason }}</div>
+
+      <div class="req-evidence">
+        <span>Current code: <b>{{ r.current_code }}</b></span>
+        <span>Device status: <b>{{ p.status if p else '—' }}</b></span>
+        <span>IN: <b>{{ p.in_time if p else '—' }}</b></span>
+        <span>OUT: <b>{{ p.out_time if p else '—' }}</b></span>
+        <span>Suggested: <b>{{ r.requested_code }}</b></span>
+      </div>
+
+      <form method="post" action="{{ url_for('admin.decide', rid=r.id) }}" class="req-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div style="flex:0 0 170px">
+          <label for="sc{{ r.id }}">Approve as code</label>
+          <select id="sc{{ r.id }}" name="set_code">
             <option value="{{ r.requested_code }}">{{ r.requested_code }} (suggested)</option>
             {% for c in ['P','O','L','H','HD','WO','HO','-'] if c != r.requested_code %}
               <option value="{{ c }}">{{ c }}</option>{% endfor %}
           </select>
         </div>
-        <div style="flex:2"><label>Remark</label><input name="remark" style="width:100%" placeholder="optional"></div>
-        <div style="align-self:flex-end">
-          <button class="btn sm green" name="action" value="approve">✅ Approve</button>
-          <button class="btn sm red" name="action" value="reject">❌ Reject</button>
+        <div style="flex:2 1 220px">
+          <label for="rm{{ r.id }}">Remark</label>
+          <input id="rm{{ r.id }}" name="remark" placeholder="optional">
+        </div>
+        <div class="actions" style="flex:0 0 auto">
+          <button class="btn sm green" name="action" value="approve">
+            <svg aria-hidden="true"><use href="#i-check"/></svg>Approve
+          </button>
+          <button class="btn sm red" name="action" value="reject">
+            <svg aria-hidden="true"><use href="#i-x"/></svg>Reject
+          </button>
         </div>
       </form>
     </div>
-  {% else %}<p class="muted">No pending requests.</p>{% endfor %}
+  {% else %}
+    <div class="empty">
+      <div class="ico"><svg aria-hidden="true"><use href="#i-check"/></svg></div>
+      <b>All clear</b>
+      <span>No pending requests right now.</span>
+    </div>
+  {% endfor %}
 </div>
-<div class="card">
-  <h2>Recent decided</h2>
-  <table><tr><th>Employee</th><th>Date</th><th>Type</th><th>Status</th><th>Remark</th><th>Decided</th></tr>
-  {% for r in decided %}
-    <tr><td>{{ r.employee.name }}</td><td>{{ r.adate }}</td><td>{{ r.rtype }}</td>
-      <td><span class="tag status-{{ r.status|upper }}">{{ r.status }}</span></td>
-      <td>{{ r.admin_remark or '-' }}</td><td>{{ r.decided_at.strftime('%d-%b %H:%M') if r.decided_at }}</td></tr>
-  {% else %}<tr><td colspan="6" class="muted">Nothing decided yet.</td></tr>{% endfor %}
-  </table>
+
+<div class="card flush">
+  <div class="card-head"><h2 style="margin:0">Recent decisions</h2></div>
+  {% if decided %}
+  <div class="table-wrap" style="border:0;border-radius:0">
+    <table>
+      <tr><th>Employee</th><th>Date</th><th>Type</th><th>Status</th><th>Remark</th><th>Decided</th></tr>
+      {% for r in decided %}
+        <tr>
+          <td class="nowrap">{{ r.employee.name }}</td>
+          <td class="nowrap">{{ r.adate }}</td>
+          <td class="nowrap">{{ r.rtype }}</td>
+          <td><span class="tag status-{{ r.status|upper }}">{{ r.status }}</span></td>
+          <td>{{ r.admin_remark or '—' }}</td>
+          <td class="nowrap muted">{{ r.decided_at.strftime('%d-%b %H:%M') if r.decided_at else '—' }}</td>
+        </tr>
+      {% endfor %}
+    </table>
+  </div>
+  {% else %}
+    <div class="empty" style="padding:24px 14px"><span>Nothing decided yet.</span></div>
+  {% endif %}
 </div>
 {% endblock %}

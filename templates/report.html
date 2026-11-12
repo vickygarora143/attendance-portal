@@ -1,14 +1,39 @@
 {% extends "base.html" %}
+{% block title %}Monthly report · Attendance Portal{% endblock %}
 {% block content %}
-<h1>📊 Monthly Report — {{ off.name }}</h1>
-<div class="card" style="max-width:560px">
+<div class="page-head">
+  <div class="titles">
+    <h1>Monthly report <span class="chip">{{ off.name }}</span></h1>
+    <div class="subtitle">Downloads a 7-sheet Excel file in the same format as the manual reports.</div>
+  </div>
+</div>
+
+<div class="card" style="max-width:620px">
   <form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <label>Month</label>
-    <input type="month" name="month" required>
-    <br><br><button class="btn green">⬇️ Generate & Download (7-sheet Excel)</button>
+    <label for="month">Month</label>
+    <input id="month" type="month" name="month" required>
+    <div class="form-actions">
+      <button class="btn green">
+        <svg aria-hidden="true"><use href="#i-chart"/></svg>Generate &amp; download
+      </button>
+    </div>
   </form>
-  <p class="muted">Same format as your September/October Excel reports:
-  0_README · 1_BIOMETRIC · 2_FINAL · 3_DISCREPANCY · 4_DAYWISE · 5_LATE_DETAIL · 6_EXCEPTIONS.
-  Approved regularizations and holiday/comp-off rules are included automatically.</p>
+</div>
+
+<div class="card">
+  <h2>What is inside</h2>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Sheet</th><th>Contents</th></tr>
+      <tr><td class="nowrap">0_README</td><td>Rules used, month, office and generation time.</td></tr>
+      <tr><td class="nowrap">1_BIOMETRIC</td><td>Raw device punches as imported.</td></tr>
+      <tr><td class="nowrap">2_FINAL</td><td>Final day-wise codes after rules and approvals.</td></tr>
+      <tr><td class="nowrap">3_DISCREPANCY</td><td>Device data versus final codes.</td></tr>
+      <tr><td class="nowrap">4_DAYWISE</td><td>Calendar grid of every employee.</td></tr>
+      <tr><td class="nowrap">5_LATE_DETAIL</td><td>Late arrivals with waiver and deduction.</td></tr>
+      <tr><td class="nowrap">6_EXCEPTIONS</td><td>Holidays, WOP, missing punches and adjustments.</td></tr>
+    </table>
+  </div>
+  <p class="muted" style="margin-top:10px">Approved regularizations and holiday/comp-off rules are included automatically.</p>
 </div>
 {% endblock %}

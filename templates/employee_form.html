@@ -1,41 +1,107 @@
 {% extends "base.html" %}
+{% block title %}{{ 'Edit' if emp else 'Add' }} employee · Attendance Portal{% endblock %}
 {% block content %}
-<h1>{{ 'Edit' if emp else 'Add' }} Employee</h1>
-<div class="card" style="max-width:760px">
+<div class="page-head">
+  <div class="titles">
+    <h1>{{ 'Edit' if emp else 'Add' }} employee</h1>
+    <div class="subtitle">Salary fields are visible to admins only — agents never see them.</div>
+  </div>
+  <div class="actions">
+    <a class="btn ghost" href="{{ url_for('admin.employees') }}">Back to list</a>
+  </div>
+</div>
+
+<div class="card" style="max-width:820px">
   <form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <div class="form-row">
-      <div><label>Employee (Device) ID *</label><input name="emp_id" value="{{ emp.emp_id if emp }}" required></div>
-      <div><label>Name *</label><input name="name" value="{{ emp.name if emp }}" required></div>
-      <div><label>Designation</label><input name="designation" value="{{ emp.designation if emp }}"></div>
+
+    <div class="fieldset-title">Identity</div>
+    <div class="form-grid">
+      <div>
+        <label for="emp_id">Employee (device) ID *</label>
+        <input id="emp_id" name="emp_id" value="{{ emp.emp_id if emp }}" required autocomplete="off">
+      </div>
+      <div>
+        <label for="name">Name *</label>
+        <input id="name" name="name" value="{{ emp.name if emp }}" required autocomplete="off">
+      </div>
+      <div>
+        <label for="designation">Designation</label>
+        <input id="designation" name="designation" value="{{ emp.designation if emp }}" placeholder="Team Leader">
+      </div>
+      <div>
+        <label for="zone">Zone / portfolio</label>
+        <input id="zone" name="zone" value="{{ emp.zone if emp }}">
+      </div>
+      <div>
+        <label for="product">Product</label>
+        <input id="product" name="product" value="{{ emp.product if emp }}">
+      </div>
+      <div>
+        <label for="mobile">Mobile</label>
+        <input id="mobile" name="mobile" value="{{ emp.mobile if emp }}" inputmode="tel">
+      </div>
+      <div>
+        <label for="doj">Date of joining</label>
+        <input id="doj" type="date" name="doj" value="{{ emp.doj if emp }}">
+      </div>
+      <div>
+        <label for="status">Status</label>
+        <input id="status" name="status" value="{{ emp.status if emp else 'ACTIVE' }}">
+      </div>
     </div>
-    <div class="form-row">
-      <div><label>Zone / Portfolio</label><input name="zone" value="{{ emp.zone if emp }}"></div>
-      <div><label>Product</label><input name="product" value="{{ emp.product if emp }}"></div>
-      <div><label>Mobile</label><input name="mobile" value="{{ emp.mobile if emp }}"></div>
+
+    <div class="fieldset-title">Salary (admin only)</div>
+    <div class="form-grid">
+      <div>
+        <label for="gross">Gross salary</label>
+        <input id="gross" type="number" step="0.01" name="gross" value="{{ emp.gross if emp }}">
+      </div>
+      <div>
+        <label for="payable_days">Payable days</label>
+        <input id="payable_days" type="number" step="0.5" name="payable_days" value="{{ emp.payable_days if emp }}">
+      </div>
+      <div>
+        <label for="payable_salary">Payable salary</label>
+        <input id="payable_salary" type="number" step="0.01" name="payable_salary" value="{{ emp.payable_salary if emp }}">
+      </div>
+      <div>
+        <label for="incentive">Incentive</label>
+        <input id="incentive" type="number" step="0.01" name="incentive" value="{{ emp.incentive if emp else 0 }}">
+      </div>
+      <div>
+        <label for="cash_prize">Cash prize</label>
+        <input id="cash_prize" type="number" step="0.01" name="cash_prize" value="{{ emp.cash_prize if emp else 0 }}">
+      </div>
+      <div>
+        <label for="tl_incentive">TL incentive</label>
+        <input id="tl_incentive" type="number" step="0.01" name="tl_incentive" value="{{ emp.tl_incentive if emp else 0 }}">
+      </div>
+      <div>
+        <label for="arrear">Arrear</label>
+        <input id="arrear" type="number" step="0.01" name="arrear" value="{{ emp.arrear if emp else 0 }}">
+      </div>
+      <div>
+        <label for="deduction">Deduction</label>
+        <input id="deduction" type="number" step="0.01" name="deduction" value="{{ emp.deduction if emp else 0 }}">
+      </div>
+      <div>
+        <label for="final_payable">Final payable</label>
+        <input id="final_payable" type="number" step="0.01" name="final_payable" value="{{ emp.final_payable if emp }}">
+      </div>
     </div>
-    <div class="form-row">
-      <div><label>DOJ</label><input type="date" name="doj" value="{{ emp.doj if emp }}"></div>
-      <div><label>Gross Salary</label><input type="number" step="0.01" name="gross" value="{{ emp.gross if emp }}"></div>
-      <div><label>Status</label><input name="status" value="{{ emp.status if emp else 'ACTIVE' }}"></div>
+
+    <div class="fieldset-title">Device</div>
+    <label class="check">
+      <input type="checkbox" name="device_enrolled" {{ 'checked' if not emp or emp.device_enrolled }}>
+      Enrolled on biometric device
+    </label>
+
+    <div class="form-actions">
+      <button class="btn green">
+        <svg aria-hidden="true"><use href="#i-check"/></svg>Save employee
+      </button>
+      <a class="btn ghost" href="{{ url_for('admin.employees') }}">Cancel</a>
     </div>
-    <h2 style="margin-top:16px">Salary (admin-only — never shown to agents)</h2>
-    <div class="form-row">
-      <div><label>Payable Days</label><input type="number" step="0.5" name="payable_days" value="{{ emp.payable_days if emp }}"></div>
-      <div><label>Payable Salary</label><input type="number" step="0.01" name="payable_salary" value="{{ emp.payable_salary if emp }}"></div>
-      <div><label>Incentive</label><input type="number" step="0.01" name="incentive" value="{{ emp.incentive if emp else 0 }}"></div>
-    </div>
-    <div class="form-row">
-      <div><label>Cash Prize</label><input type="number" step="0.01" name="cash_prize" value="{{ emp.cash_prize if emp else 0 }}"></div>
-      <div><label>TL Incentive</label><input type="number" step="0.01" name="tl_incentive" value="{{ emp.tl_incentive if emp else 0 }}"></div>
-      <div><label>Arrear</label><input type="number" step="0.01" name="arrear" value="{{ emp.arrear if emp else 0 }}"></div>
-    </div>
-    <div class="form-row">
-      <div><label>Deduction</label><input type="number" step="0.01" name="deduction" value="{{ emp.deduction if emp else 0 }}"></div>
-      <div><label>Final Payable</label><input type="number" step="0.01" name="final_payable" value="{{ emp.final_payable if emp }}"></div>
-    </div>
-    <label style="margin-top:12px"><input type="checkbox" name="device_enrolled" {{ 'checked' if not emp or emp.device_enrolled }}> Enrolled on biometric device</label>
-    <br><br><button class="btn green">💾 Save</button>
-    <a class="btn grey" href="{{ url_for('admin.employees') }}">Cancel</a>
   </form>
 </div>
 {% endblock %}

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Login / logout / change-password routes."""
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+from sqlalchemy import func
 from werkzeug.security import check_password_hash, generate_password_hash
 from models import db, User
 from helpers import current_user, audit, login_required
@@ -40,7 +41,8 @@ def login():
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
-        u = User.query.filter_by(username=username).first()
+        # case-insensitive username match (agents may type gdsm015 / Gdsm015)
+        u = User.query.filter(func.lower(User.username) == username.lower()).first()
         if u and u.active and check_password_hash(u.password_hash, password):
             session["uid"] = u.id
             return redirect(url_for("auth.home"))

@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 """Attendance Portal — main app factory."""
 import os
-from flask import Flask, redirect, url_for, session, g, request
+from datetime import datetime
+from flask import Flask, redirect, url_for, session, g, request, flash
 from models import db, RegRequest, Employee, User
 from helpers import current_user
+
+# auto-logout after this many minutes without any activity
+SESSION_IDLE_MINUTES = 30
 
 
 def _bootstrap_super_admin(app):
@@ -33,6 +37,21 @@ def create_app():
     with app.app_context():
         db.create_all()
         _bootstrap_super_admin(app)
+
+    @app.before_request
+    def session_timeout():
+        """Auto-logout after SESSION_IDLE_MINUTES of inactivity."""
+        if request.path.startswith("/static"):
+            return
+        if session.get("uid"):
+            now = datetime.utcnow().timestamp()
+            last = session.get("last_act")
+            if last and now - last > SESSION_IDLE_MINUTES * 60:
+                session.clear()
+                flash("Session expired after 30 minutes of inactivity — please log in again.",
+                      "warning")
+                return redirect(url_for("auth.login"))
+            session["last_act"] = now
 
     @app.before_request
     def pending_badge():

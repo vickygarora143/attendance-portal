@@ -161,6 +161,17 @@ Rules (Office settings me badle ja sakte hain):
    (ya mujhse bolo — main ek "Import employees from Excel" upload page add kar dunga)
 4. Users create karo (admin + agents)
 
+## UI / design system (Aurora)
+- `static/style.css` hi single source of truth hai — saare pages usi ki classes use karte hain
+  (`topbar`, `card`, `stat`, `btn`, `table-wrap`, `tag`, `cal`, `req-card`, `toast`).
+- Icons: `templates/base.html` me inline SVG sprite (`<use href="#i-...">`) — koi CDN/font nahi.
+- Toast notifications: flash messages automatically top-right (mobile pe bottom) toasts ban jate hain.
+- Lite by design: system fonts, no images, CSS-only effects; CSS gzip ke baad ~6.6 KB.
+- Naya page banate waqt: `{% extends "base.html" %}`, phir `page-head` + `card` classes use karo —
+  inline `style="..."` avoid karo (except one-off widths).
+- UI regression check: `python _ui_check.py` — har role ke saare pages render karta hai,
+  POST forms me CSRF token, aur Hinglish text detect karta hai (non-zero exit = problem).
+
 ## Notes
 - Render free tier: 15 min idle ke baad pehli request 30–50 sec leti hai (cold start).
 - DB backups: Supabase **free plan me automatic backups nahi hote**. Month-end Excel export + `pg_dump` backup lo (dekho AUDIT report).

@@ -8,3 +8,7 @@ __pycache__/
 .out/
 dbg*.txt
 repcheck.txt
+seed_cloud.py
+import_*.py
+_*.py
+nov_out.txt

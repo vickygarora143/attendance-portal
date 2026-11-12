@@ -11,8 +11,11 @@ from datetime import date
 
 if len(sys.argv) > 1 and sys.argv[1] == "cloud":
     import os
-    os.environ["DATABASE_URL"] = (
-        "postgresql://postgres.isboqwumkgdtkyeulctw:adminmohali%40247"
+    # password stays in the environment, never in the repo
+    os.environ.setdefault(
+        "DATABASE_URL",
+        "postgresql://postgres.isboqwumkgdtkyeulctw:"
+        + os.environ.get("DB_PASSWORD", "") +
         "@aws-0-ap-south-1.pooler.supabase.com:5432/postgres")
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")

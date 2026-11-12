@@ -1,5 +1,0 @@
-﻿emps: 48 first ids: [20, 21, 4]
-attendance rows total: 1359
-punch rows total: 1359
-sample att: 4 2026-10-01 L
-in-range: 1359

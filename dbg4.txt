@@ -1,7 +1,0 @@
-﻿python : [DBG] emps=48 emp_ids[:3]=[19, 15, 6] atts=44 punch=44
-At line:1 char:53
-+ Set-Location "C:\Users\GOODWILL\attendance_portal"; python -c "
-+                                                     ~~~~~~~~~~~
-    + CategoryInfo          : NotSpecified: ([DBG] emps=48 e...tts=44 punch=44:String) [], RemoteException
-    + FullyQualifiedErrorId : NativeCommandError
- 

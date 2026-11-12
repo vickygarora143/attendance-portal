@@ -16,6 +16,7 @@ import json
 import os
 import sqlite3
 import sys
+import time
 from datetime import datetime
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -35,9 +36,21 @@ def _database_url():
 
 
 def dump_postgres(url):
+    import time
+
     import psycopg2
-    conn = psycopg2.connect(url, connect_timeout=30)
-    conn.set_session(readonly=True)
+    last = None
+    for attempt in range(3):
+        try:
+            conn = psycopg2.connect(url, connect_timeout=30)
+            conn.set_session(readonly=True)
+            break
+        except psycopg2.OperationalError as e:
+            last = e
+            print("connect attempt %d failed: %s" % (attempt + 1, str(e).splitlines()[0][:70]))
+            time.sleep(3)
+    else:
+        raise last
     cur = conn.cursor()
     cur.execute("""SELECT tablename FROM pg_tables
                    WHERE schemaname = 'public' ORDER BY tablename""")
@@ -105,7 +118,19 @@ def main():
             return 1
         if url.startswith("postgres://"):
             url = url.replace("postgres://", "postgresql://", 1)
-        sql, counts = dump_postgres(url)
+        # Supabase's pooler occasionally drops a connection mid-dump — retry
+        sql = counts = None
+        for attempt in range(3):
+            try:
+                sql, counts = dump_postgres(url)
+                break
+            except Exception as e:
+                print("backup attempt %d failed: %s"
+                      % (attempt + 1, str(e).splitlines()[0][:70]))
+                if attempt == 2:
+                    print("ERROR: backup failed after 3 attempts")
+                    return 1
+                time.sleep(5)
         tag = "cloud"
 
     raw = sql.encode("utf-8")

@@ -26,13 +26,39 @@ def _bootstrap_super_admin(app):
     db.session.commit()
 
 
+def _resolve_db_url():
+    """DATABASE_URL, with a temporary fallback file if that URL cannot connect.
+
+    db_fallback.json only kicks in when the configured URL is unusable (e.g. the
+    Supabase password was rotated but the Render env var was not updated yet).
+    Delete db_fallback.json once the env var is correct.
+    """
+    default = "sqlite:///" + os.path.join(os.path.dirname(__file__), "portal.db")
+    url = os.environ.get("DATABASE_URL", default)
+    if url.startswith("postgres://"):
+        url = url.replace("postgres://", "postgresql://", 1)
+    fb_path = os.path.join(os.path.dirname(__file__), "db_fallback.json")
+    if url.startswith("postgresql") and os.path.exists(fb_path):
+        try:
+            import psycopg2
+            psycopg2.connect(url, connect_timeout=6).close()
+        except Exception as exc:
+            try:
+                import json
+                with open(fb_path, "r", encoding="utf-8") as f:
+                    fb = json.load(f)["database_url"]
+                print("WARNING: DATABASE_URL unusable (%s) - using db_fallback.json"
+                      % str(exc).splitlines()[0][:70])
+                return fb
+            except Exception as e2:
+                print("WARNING: fallback config unreadable: %s" % e2)
+    return url
+
+
 def create_app():
     app = Flask(__name__)
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "change-this-secret-key")
-    db_url = os.environ.get("DATABASE_URL",
-                            "sqlite:///" + os.path.join(os.path.dirname(__file__), "portal.db"))
-    if db_url.startswith("postgres://"):
-        db_url = db_url.replace("postgres://", "postgresql://", 1)
+    db_url = _resolve_db_url()
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["MAX_CONTENT_LENGTH"] = 20 * 1024 * 1024  # 20 MB uploads

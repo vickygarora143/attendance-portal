@@ -51,6 +51,38 @@ schtasks /create /tn "AttendancePortalBackup" /tr "C:\Users\GOODWILL\attendance_
 
 ⚠️ Backup file me password hashes hote hain — safe jagah rakhein, public folder/WhatsApp me na bhejein.
 
+## DB password rotate karna (Supabase)
+
+Agar DB password change karte ho to **3 jagah** update karna hota hai — warna portal 500 deta hai:
+
+1. **Supabase** → Settings → Database → Reset database password
+2. **Render** → Environment → `DATABASE_URL` (Save → auto redeploy)
+3. **Local** → `backup_config.json` (gitignored)
+
+### ⚠️ Connection string me special characters encode karo
+
+| Character | Encode |
+|---|---|
+| `@` | `%40` |
+| `#` | `%23` |
+| `/` | `%2F` |
+| `:` | `%3A` |
+
+Example — password `adminmohaligdsf@247`:
+
+```
+postgresql://postgres.isboqwumkgdtkyeulctw:adminmohaligdsf%40247@aws-0-ap-south-1.pooler.supabase.com:5432/postgres
+```
+
+Seedha `@` paste karne se URL galat parse hota hai aur login 500 error deta hai.
+
+### Check kaise karein ki DB chal rahi hai
+
+```powershell
+python backup_db.py
+```
+Agar backup ban gaya to connection sahi hai.
+
 ## Daily workflow
 
 1. **Admin** → Upload → month select + device `.xls` file → preview check → Confirm Import

@@ -25,7 +25,8 @@ def parse_bio(path_or_fileobj):
     r = 10
     while r < sh.nrows:
         if str(sh.cell_value(r, 0)).strip() == "Emp. Code:":
-            code = str(sh.cell_value(r, 3)).strip()
+            # some device exports put the code in col 2, others in col 3
+            code = str(sh.cell_value(r, 3)).strip() or str(sh.cell_value(r, 2)).strip()
             name = str(sh.cell_value(r, 13)).strip()
             days = {}
             for d, c in day_cols.items():
@@ -54,6 +55,8 @@ def derive_code(st, in_time, is_holiday, office):
         if office.hd_from <= t < office.suspect_from:
             return "H"
         return "P"
+    if st in ("HP", "\u00bdP"):
+        return "H"                       # device half-day-present -> half day
     if st == "WOP":
         return "O"                       # worked on weekly-off -> comp-off present
     if st == "A":

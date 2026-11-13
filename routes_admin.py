@@ -86,7 +86,8 @@ def upload():
 @role_required("admin", "super_admin")
 def preview(uid):
     up = db.session.get(Upload, uid)
-    if not up or up.office_id != _my_office().id:
+    off = _my_office()
+    if not up or up.office_id != off.id:
         flash("Upload not found.", "danger")
         return redirect(url_for(".upload"))
     payload = json.loads(up.payload or "{}")
@@ -97,12 +98,12 @@ def preview(uid):
         ndays = len(data.get("days", {}))
         present = sum(1 for rec in data.get("days", {}).values() if rec[0] in ("P", "WOP"))
         lates = sum(1 for rec in data.get("days", {}).values()
-                    if rec[0] == "P" and _is_late(rec[1], up.office_id))
+                    if rec[0] == "P" and _is_late(rec[1], off))
         row = {"code": code, "name": data.get("name"), "ndays": ndays,
                "present": present, "lates": lates}
         (known if emp else unknown).append(row)
     return render_template("upload_preview.html", up=up, known=known, unknown=unknown,
-                           y=y, m=m)
+                           y=y, m=m, off=off)
 
 
 def _is_late(in_time, off):

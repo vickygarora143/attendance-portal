@@ -36,6 +36,30 @@ for p in ["/admin", "/admin/upload", "/admin/requests", "/admin/employees",
           "/admin/holidays", "/admin/report", "/admin/attendance/1"]:
     check(p, c.get(p))
 
+print("== upload preview (regression: office object + unknown ids) ==")
+import json as _json
+import models
+with app.app_context():
+    e = models.Employee.query.first()
+    adm = models.User.query.filter_by(username="mohali_admin").first()
+    payload = {"month": "2026-11", "rows": {
+        e.emp_id: {"name": e.name, "days": {"5": ["P", "09:30", "18:00", "8:30"]}},
+        "UNKNOWN-ID": {"name": "X", "days": {"5": ["A", "", "", ""]}},
+    }}
+    up = models.Upload(office_id=e.office_id, admin_id=adm.id if adm else None,
+                       filename="_smoke_preview.xls", month="2026-11",
+                       payload=_json.dumps(payload), n_rows=2)
+    models.db.session.add(up)
+    models.db.session.commit()
+    tmp_uid = up.id
+r = check(f"/admin/upload/{tmp_uid} (preview)", c.get(f"/admin/upload/{tmp_uid}"))
+if b"Matched" not in r.data or b"Not in Employees" not in r.data:
+    print("   FAIL preview did not list matched/unknown rows")
+    fails.append("preview content")
+with app.app_context():
+    models.Upload.query.filter_by(id=tmp_uid).delete()
+    models.db.session.commit()
+
 print("== monthly report download ==")
 r = c.post("/admin/report", data={"month": "2026-10"})
 check("report POST", r)

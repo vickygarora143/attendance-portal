@@ -26,6 +26,28 @@ def _bootstrap_super_admin(app):
     db.session.commit()
 
 
+def _normalize_db_url(url):
+    """Re-encode the password inside a Postgres URL.
+
+    A password containing '@' breaks the URL ("...:pass@word@host" -> host becomes
+    "word@host"). This splits the host at the LAST '@' and percent-encodes the
+    password, so both "pass@word" and "pass%40word" work. Idempotent.
+    """
+    if not url.startswith(("postgresql://", "postgres://")):
+        return url
+    try:
+        from urllib.parse import quote, unquote
+        scheme, rest = url.split("://", 1)
+        userinfo, hostpart = rest.rsplit("@", 1)
+        user, sep, pwd = userinfo.partition(":")
+        if not sep:
+            return url
+        return "%s://%s:%s@%s" % (scheme, quote(unquote(user), safe=""),
+                                  quote(unquote(pwd), safe=""), hostpart)
+    except Exception:
+        return url
+
+
 def _resolve_db_url():
     """DATABASE_URL, with a temporary fallback file if that URL cannot connect.
 
@@ -37,6 +59,7 @@ def _resolve_db_url():
     url = os.environ.get("DATABASE_URL", default)
     if url.startswith("postgres://"):
         url = url.replace("postgres://", "postgresql://", 1)
+    url = _normalize_db_url(url)
     fb_path = os.path.join(os.path.dirname(__file__), "db_fallback.json")
     if url.startswith("postgresql") and os.path.exists(fb_path):
         try:
@@ -49,7 +72,7 @@ def _resolve_db_url():
                     fb = json.load(f)["database_url"]
                 print("WARNING: DATABASE_URL unusable (%s) - using db_fallback.json"
                       % str(exc).splitlines()[0][:70])
-                return fb
+                return _normalize_db_url(fb)
             except Exception as e2:
                 print("WARNING: fallback config unreadable: %s" % e2)
     return url

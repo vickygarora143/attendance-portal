@@ -94,9 +94,27 @@ def create_app():
         "SESSION_COOKIE_SECURE", "1" if _on_cloud else "0") == "1"
     db.init_app(app)
 
-    with app.app_context():
-        db.create_all()
-        _bootstrap_super_admin(app)
+    # --- boot ---
+    # Schema creation is opt-in on the cloud: the tables already exist there, and a
+    # remote schema reflection only adds startup time. More important, a DB blip at
+    # boot must never kill the process - Render would restart it in a loop, which is
+    # what turns a 40 s cold start into "5 minutes and still loading".
+    auto_create = os.environ.get("AUTO_CREATE_TABLES")
+    if auto_create is None:
+        auto_create = "0" if _on_cloud else "1"
+    if auto_create.strip().lower() in ("1", "true", "yes", "on"):
+        with app.app_context():
+            try:
+                db.create_all()
+            except Exception as exc:                       # noqa: BLE001
+                print("WARNING: create_all skipped: %s" % str(exc).splitlines()[0][:120])
+
+    if os.environ.get("AUTO_BOOTSTRAP", "1").strip().lower() not in ("0", "false", "no", "off"):
+        with app.app_context():
+            try:
+                _bootstrap_super_admin(app)
+            except Exception as exc:                       # noqa: BLE001
+                print("WARNING: bootstrap skipped: %s" % str(exc).splitlines()[0][:120])
 
     @app.before_request
     def session_timeout():

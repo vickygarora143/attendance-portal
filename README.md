@@ -161,11 +161,14 @@ Agar backup ban gaya to connection sahi hai.
 4. **Admin** → Report → month select → 7-sheet Excel download
 
 Rules (Office settings me badle ja sakte hain):
-- First IN after **10:15** = L (late)
+- First IN after **10:00** = L (late)
 - First IN **13:30–16:00** = H (half-day)
 - Device **WOP** (weekly-off pe kaam) = **O** (comp-off present)
 - Holiday pe device A = **HO** (paid off)
-- **First 4 lates = Present** (waived); 5th onward = **1/6 day** deduction
+- **First 3 lates = Present** (waived); 4th onward = **1/6 day** deduction
+
+> 19 Nov 2026 se ye rule lagu hai (pehle 10:15 / 4 waivers tha). November ka data
+> naye rule se re-derive kiya gaya — 17 rows `P → L`. Manual/adjusted rows nahi chhue.
 
 ## Cloud deploy (FREE — Render + Supabase)
 

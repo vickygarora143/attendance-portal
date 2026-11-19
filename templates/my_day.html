@@ -13,6 +13,17 @@
   </div>
 </div>
 
+{% if a and a.code in ('P','L','H','HD') and (not a.in_time or not a.out_time) %}
+<div class="card narrow">
+  <div class="missbar">
+    <svg aria-hidden="true"><use href="#i-clock"/></svg>
+    <span><b>Punch {{ 'IN' if not a.in_time else 'OUT' }} missing on this day.</b>
+      Device total is {{ a.total_hrs or '—' }}. If the punch is wrong, raise a
+      regularization request below.</span>
+  </div>
+</div>
+{% endif %}
+
 <div class="card narrow">
   <h2><svg aria-hidden="true" style="width:15px;height:15px"><use href="#i-clock"/></svg>Punch evidence</h2>
   <div class="table-wrap">

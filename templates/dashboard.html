@@ -52,6 +52,40 @@
   </div>
 </div>
 
+{% if miss %}
+<div class="card flush">
+  <div class="card-head">
+    <h2 style="margin:0"><svg aria-hidden="true" style="width:15px;height:15px"><use href="#i-clock"/></svg>
+      Missing punches</h2>
+    <span class="tiny">{{ miss|length }} in {{ month }}</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Emp ID</th><th>Name</th><th>Date</th><th>Code</th><th>IN</th><th>OUT</th>
+          <th>Total</th><th>Missing</th><th></th></tr>
+      {% for r in miss[:15] %}
+      <tr>
+        <td class="mono">{{ r.emp_id }}</td>
+        <td>{{ r.name }}</td>
+        <td class="nowrap">{{ r.adate.strftime('%d-%b') }}</td>
+        <td><span class="tag mono c-{{ r.code }}">{{ r.code }}</span></td>
+        <td>{{ r.in_time or '—' }}</td>
+        <td>{{ r.out_time or '—' }}</td>
+        <td>{{ r.total_hrs or '—' }}</td>
+        <td><span class="misspill">{{ 'IN' if not r.in_time else 'OUT' }}</span></td>
+        <td class="num">
+          <a class="btn sm ghost" href="{{ url_for('admin.attendance_edit', eid=r.employee_id) }}?ym={{ month }}">Fix</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+  {% if miss|length > 15 %}
+  <div class="tiny" style="padding:10px 14px">Showing latest 15 of {{ miss|length }}. Use Attendance editor for the rest.</div>
+  {% endif %}
+</div>
+{% endif %}
+
 <div class="card">
   <h2><svg aria-hidden="true" style="width:15px;height:15px"><use href="#i-clock"/></svg>Daily routine</h2>
   <ol class="howto">

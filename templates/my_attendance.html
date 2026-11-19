@@ -63,22 +63,32 @@
     <h2 style="margin:0"><svg aria-hidden="true" style="width:15px;height:15px"><use href="#i-cal"/></svg>Calendar</h2>
     <span class="tiny">Tap a day for details</span>
   </div>
+  {% if summ.miss %}
+  <div class="missbar">
+    <svg aria-hidden="true"><use href="#i-clock"/></svg>
+    <span><b>{{ summ.miss }} day{{ '' if summ.miss == 1 else 's' }}</b> with a missing punch
+      ({% if summ.miss_out %}{{ summ.miss_out }} without OUT{% endif %}{% if summ.miss_out and summ.miss_in %} · {% endif %}{% if summ.miss_in %}{{ summ.miss_in }} without IN{% endif %}).
+      Days are marked <span class="missdot">!</span> — tap one to raise a regularization request.</span>
+  </div>
+  {% endif %}
   <div style="padding:12px 14px 14px">
     <div class="cal-wrap">
       <table class="cal">
         <tr>{% for x in days %}<th>{{ x.d }}</th>{% endfor %}</tr>
         <tr class="wdrow">{% for x in days %}<td>{{ x.wd }}</td>{% endfor %}</tr>
         <tr>{% for x in days %}
-          <td class="codecell c-{{ x.code }} {{ 'adj' if x.adjusted }}">
+          <td class="codecell c-{{ x.code }} {{ 'adj' if x.adjusted }} {{ 'missp' if x.miss }}"
+              {% if x.miss %}title="{{ x.code }} · punch {{ 'IN' if x.miss == 'in' else 'OUT' }} missing{% if x.total %} · total {{ x.total }}{% endif %}"{% endif %}>
             <a href="{{ url_for('agent.my_day', y=y, m=m, d=x.d) }}" title="{{ x.code }}">{{ x.code }}</a>
           </td>{% endfor %}</tr>
-        <tr>{% for x in days %}<td class="times">{{ x.in or '' }}{% if x.out %}<br>{{ x.out }}{% endif %}</td>{% endfor %}</tr>
+        <tr>{% for x in days %}<td class="times">{{ x.in or '' }}{% if x.out %}<br>{{ x.out }}{% elif x.miss %}<br><span class="missx">—</span>{% endif %}</td>{% endfor %}</tr>
       </table>
     </div>
     <div class="legend">
       <span class="c-P">P Present</span><span class="c-L">L Late</span><span class="c-A">A Absent</span>
       <span class="c-H">H Half-day</span><span class="c-WO">WO Weekly-off</span>
       <span class="c-HO">HO Holiday</span><span class="c-O">O Comp-off</span>
+      <span class="misslegend"><b>!</b> Punch missing</span>
       <span style="background:#fff;border:1px solid #e3e8f0;color:#66738c">• Adjusted</span>
     </div>
     <p class="muted" style="margin-top:10px">Click any day to open the details and the

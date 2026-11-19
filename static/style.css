@@ -442,6 +442,37 @@ tbody tr:last-child td { border-bottom: 0; }
 }
 .today { box-shadow: inset 0 0 0 2px var(--blue); border-radius: 6px; }
 
+/* ---- missing punch markers ---- */
+.codecell.missp::after {
+  content: "!"; position: absolute; top: 2px; left: 3px; width: 12px; height: 12px;
+  line-height: 12px; border-radius: 50%; background: #e11d48; color: #fff;
+  font-size: 9px; font-weight: 900; text-align: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .18);
+}
+.missx { color: #e11d48; font-weight: 900; }
+.missbar {
+  display: flex; gap: 9px; align-items: flex-start; padding: 10px 14px;
+  background: #fff5f6; border-bottom: 1px solid #fbd5dd; color: #8c1d33;
+  font-size: 12.5px; line-height: 1.55;
+}
+.card.narrow .missbar, .card .missbar:only-child { border-bottom: 0; border-radius: var(--r); }
+.missbar svg { width: 15px; height: 15px; flex: 0 0 auto; margin-top: 1px; color: #e11d48; }
+.missbar b { color: #7f1730; }
+.missdot {
+  display: inline-block; width: 14px; height: 14px; line-height: 14px; text-align: center;
+  border-radius: 50%; background: #e11d48; color: #fff; font-size: 9.5px;
+  font-weight: 900; vertical-align: -1px;
+}
+.misslegend { display: inline-flex; align-items: center; gap: 5px; }
+.misslegend b {
+  display: inline-block; width: 12px; height: 12px; line-height: 12px; text-align: center;
+  border-radius: 50%; background: #e11d48; color: #fff; font-size: 9px; font-weight: 900;
+}
+.misspill {
+  display: inline-block; padding: 1px 7px; border-radius: 999px; background: #ffe4e9;
+  color: #a01230; font-size: 10.5px; font-weight: 800; letter-spacing: .02em;
+}
+
 .legend { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 12px; }
 .legend span {
   display: inline-flex; align-items: center; gap: 5px;

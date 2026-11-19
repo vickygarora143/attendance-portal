@@ -40,8 +40,21 @@ def dashboard():
         .filter(Employee.office_id == off.id).count()
     last_up = Upload.query.filter_by(office_id=off.id, status="imported") \
         .order_by(Upload.created_at.desc()).first()
+    # days that count as worked but are missing an IN or OUT punch
+    y0, m0 = int(month[:4]), int(month[5:7])
+    miss_rows = db.session.query(Employee.emp_id, Employee.name, Attendance.employee_id,
+                                Attendance.adate, Attendance.code, Attendance.in_time,
+                                Attendance.out_time, Attendance.total_hrs) \
+        .join(Attendance, Attendance.employee_id == Employee.id) \
+        .filter(Employee.office_id == off.id,
+                Attendance.adate >= date(y0, m0, 1),
+                Attendance.adate <= date(y0, m0, month_days(y0, m0)),
+                Attendance.code.in_(("P", "L", "H", "HD")),
+                db.or_(db.func.coalesce(Attendance.in_time, "") == "",
+                       db.func.coalesce(Attendance.out_time, "") == "")) \
+        .order_by(Attendance.adate.desc(), Employee.emp_id).all()
     return render_template("dashboard.html", off=off, emps=emps, pending=pending,
-                           last_up=last_up, month=month)
+                           last_up=last_up, month=month, miss=miss_rows)
 
 
 # ------------------------------------------------------------------ upload

@@ -66,10 +66,21 @@ def my_attendance():
     WDL = ["M", "T", "W", "T", "F", "S", "S"]
     for d in range(1, nd + 1):
         a = atts.get(d)
+        i = (a.in_time if a else "") or (punches[d].in_time if d in punches else "")
+        o = (a.out_time if a else "") or (punches[d].out_time if d in punches else "")
+        code = a.code if a else "-"
+        # missing punch marker: only meaningful on a day that counts as worked
+        miss = ""
+        if code in ("P", "L", "H", "HD"):
+            if not i:
+                miss = "in"
+            elif not o:
+                miss = "out"
         days.append({"d": d, "wd": WDL[date(y, m, d).weekday()],
-                     "code": a.code if a else "-", "adjusted": bool(a and a.adjusted),
-                     "in": (a.in_time if a else "") or (punches[d].in_time if d in punches else ""),
-                     "out": (a.out_time if a else "") or (punches[d].out_time if d in punches else "")})
+                     "code": code, "adjusted": bool(a and a.adjusted),
+                     "in": i, "out": o,
+                     "total": (a.total_hrs if a else "") or "",
+                     "miss": miss})
     codes = [x["code"] for x in days]
     off = emp.office
     waiver = off.waiver if off else 3
@@ -86,6 +97,9 @@ def my_attendance():
         "O": codes.count("O"),
         "waived": min(lates, waiver),
         "deduct": max(0, lates - waiver),
+        "miss": sum(1 for x in days if x["miss"]),
+        "miss_out": sum(1 for x in days if x["miss"] == "out"),
+        "miss_in": sum(1 for x in days if x["miss"] == "in"),
     }
     return render_template("my_attendance.html", emp=emp, days=days, summ=summ,
                            y=y, m=m, nd=nd, today=date.today(), cut=cut, waiver=waiver)

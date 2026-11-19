@@ -13,10 +13,10 @@ class Office(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String(20), unique=True, nullable=False)
     name = db.Column(db.String(100), nullable=False)
-    late_after = db.Column(db.Integer, default=615)      # minutes: 10:15
+    late_after = db.Column(db.Integer, default=600)      # minutes: 10:00
     hd_from = db.Column(db.Integer, default=810)         # minutes: 13:30
     suspect_from = db.Column(db.Integer, default=960)    # minutes: 16:00
-    waiver = db.Column(db.Integer, default=4)            # first N lates = Present
+    waiver = db.Column(db.Integer, default=3)            # first N lates = Present
     late_fraction = db.Column(db.Float, default=1.0 / 6) # deduction per late beyond waiver
 
 

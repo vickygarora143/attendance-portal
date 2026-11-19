@@ -30,8 +30,8 @@
     <div class="form-grid">
       <div>
         <label for="late_after">Late after (minutes from midnight)</label>
-        <input id="late_after" type="number" name="late_after" value="{{ off.late_after if off else 615 }}">
-        <div class="hint">615 = 10:15</div>
+        <input id="late_after" type="number" name="late_after" value="{{ off.late_after if off else 600 }}">
+        <div class="hint">600 = 10:00</div>
       </div>
       <div>
         <label for="hd_from">Half-day from (minutes)</label>
@@ -40,7 +40,7 @@
       </div>
       <div>
         <label for="waiver">Late waiver (first N = Present)</label>
-        <input id="waiver" type="number" name="waiver" value="{{ off.waiver if off else 4 }}">
+        <input id="waiver" type="number" name="waiver" value="{{ off.waiver if off else 3 }}">
         <div class="hint">5th late onwards = 1/6 day deduction</div>
       </div>
       <div>

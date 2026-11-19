@@ -44,7 +44,7 @@
   <div class="stat orange">
     <div class="stat-label"><svg aria-hidden="true"><use href="#i-clock"/></svg>Late</div>
     <div class="big">{{ summ.L }}</div>
-    <div class="stat-note">first {{ emp.office.waiver if emp.office else 4 }} waived{% if summ.deduct %} · {{ summ.deduct }} deducted (×1/6){% endif %}</div>
+    <div class="stat-note">Late after {{ cut }} · first {{ waiver }} waived{% if summ.deduct %} · {{ summ.deduct }} deducted (×1/6){% endif %}</div>
   </div>
   <div class="stat amber">
     <div class="stat-label"><svg aria-hidden="true"><use href="#i-cal"/></svg>Half-day</div>

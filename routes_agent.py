@@ -71,7 +71,10 @@ def my_attendance():
                      "in": (a.in_time if a else "") or (punches[d].in_time if d in punches else ""),
                      "out": (a.out_time if a else "") or (punches[d].out_time if d in punches else "")})
     codes = [x["code"] for x in days]
-    waiver = emp.office.waiver if emp.office else 4
+    off = emp.office
+    waiver = off.waiver if off else 3
+    late_after = off.late_after if off else 600
+    cut = "%02d:%02d" % (late_after // 60, late_after % 60)
     lates = codes.count("L")
     summ = {
         "P": codes.count("P") + min(lates, waiver),
@@ -85,7 +88,7 @@ def my_attendance():
         "deduct": max(0, lates - waiver),
     }
     return render_template("my_attendance.html", emp=emp, days=days, summ=summ,
-                           y=y, m=m, nd=nd, today=date.today())
+                           y=y, m=m, nd=nd, today=date.today(), cut=cut, waiver=waiver)
 
 
 @bp.route("/me/day/<int:y>/<int:m>/<int:d>")

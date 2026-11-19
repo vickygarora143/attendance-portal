@@ -5,6 +5,8 @@ from io import BytesIO
 from datetime import date, datetime
 from flask import (Blueprint, render_template, request, redirect, url_for,
                    flash, send_file, current_app)
+from sqlalchemy import tuple_
+from sqlalchemy.orm import joinedload
 from models import (db, Office, Employee, User, Holiday, Upload, DevicePunch,
                     Attendance, RegRequest)
 from helpers import (login_required, role_required, current_user, audit,
@@ -175,15 +177,26 @@ def discard(uid):
 @role_required("admin", "super_admin")
 def requests():
     off = _my_office()
-    pend = RegRequest.query.filter_by(status="pending").join(Employee) \
+    # joinedload + two batched lookups: the old loop ran 2 queries per request
+    # (DevicePunch + Attendance), which made this the slowest admin page.
+    pend = RegRequest.query.options(joinedload(RegRequest.employee)) \
+        .filter_by(status="pending").join(Employee) \
         .filter(Employee.office_id == off.id).order_by(RegRequest.created_at).all()
-    decided = RegRequest.query.filter(RegRequest.status != "pending").join(Employee) \
+    decided = RegRequest.query.options(joinedload(RegRequest.employee)) \
+        .filter(RegRequest.status != "pending").join(Employee) \
         .filter(Employee.office_id == off.id).order_by(RegRequest.decided_at.desc()).limit(30).all()
-    ev = {}
-    for r in pend + decided:
-        p = DevicePunch.query.filter_by(employee_id=r.employee_id, pdate=r.adate).first()
-        a = Attendance.query.filter_by(employee_id=r.employee_id, adate=r.adate).first()
-        ev[r.id] = (p, a)
+    rows = pend + decided
+    keys = {(r.employee_id, r.adate) for r in rows}
+    punches, atts = {}, {}
+    if keys:
+        for p in DevicePunch.query.filter(
+                tuple_(DevicePunch.employee_id, DevicePunch.pdate).in_(keys)):
+            punches[(p.employee_id, p.pdate)] = p
+        for a in Attendance.query.filter(
+                tuple_(Attendance.employee_id, Attendance.adate).in_(keys)):
+            atts[(a.employee_id, a.adate)] = a
+    ev = {r.id: (punches.get((r.employee_id, r.adate)),
+                 atts.get((r.employee_id, r.adate))) for r in rows}
     return render_template("requests.html", pend=pend, decided=decided, ev=ev)
 
 

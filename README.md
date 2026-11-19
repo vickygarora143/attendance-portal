@@ -59,7 +59,47 @@ Pro plan ki zaroorat nahi. Free tier pe 3 limitations hain, teeno ka jugaad ho c
 |---|---|---|
 | **Automatic backups** nahi | Supabase free me daily backup nahi milta | `backup_db.py` + weekly Task Scheduler (Sunday 10 AM), purane 8 backups |
 | **1 hafta inactive → project pause** | DB pause ho jata hai | `/healthz` endpoint + free cron (cron-job.org) daily ping |
-| **15 min idle → sleep** | Pehli request 30–50 s | Acceptable; ping se kam hota hai |
+| **15 min idle → sleep** | Pehli request 30–50 s | Supabase `pg_cron` se har 5 min ping (06:30–22:25 IST) — office hours me sleep hi nahi hota |
+
+### Cold start (sleep) — pehle 2–5 min lagta tha, ab theek
+
+Render free instance 15 min idle hone par suspend ho jata hai; agli request Render ka apna
+"welcome to render" page dikhati hai. Uske upar do cheezein problem bana rahi thi:
+
+1. **gunicorn ka default 30 s worker timeout** — boot me `db.create_all()` (remote schema
+   reflection) 30 s se zyada le raha tha, to gunicorn worker ko kill karke restart karta rehta
+   tha → 2–5 min ka loop.
+2. **Koi keep-alive chal hi nahi raha tha.**
+
+Fix (commit `86397ab`):
+
+- Cloud par `create_all()` boot se hata diya (`AUTO_CREATE_TABLES=0` default). Tables pehle se hain,
+  boot ab **~3.6 s**.
+- Boot `try/except` me hai — DB ka ek blip bhi app ko crash-loop me nahi daalega.
+- gunicorn: `--timeout 120 --worker-class gthread --threads 4` (concurrent requests queue nahi hote).
+- **Keep-alive Supabase ke andar se** — koi external service / signup nahi:
+
+```sql
+-- Supabase SQL editor (ya psycopg2) me ek hi baar
+create extension if not exists pg_cron;
+create extension if not exists pg_net;
+select cron.schedule(
+  'render-keepalive',
+  '*/5 1-16 * * *',                       -- har 5 min, 06:30–22:25 IST
+  $$select net.http_get(
+      url := 'https://attendance-portal-qgww.onrender.com/healthz',
+      timeout_milliseconds := 45000)$$);
+```
+
+Check / hatana:
+
+```sql
+select jobid, schedule, active from cron.job where jobname='render-keepalive';
+select cron.unschedule('render-keepalive');
+```
+
+16 ghante/din ≈ **500 instance-hours/month** — Render ke 750 free hours me aaram se (24×7 karne par
+744 h ho jate hain, margin zero rehta hai, isliye raat ka window chhoda hai).
 
 ### Supabase pause na ho — free cron setup (5 min)
 
@@ -173,6 +213,7 @@ Rules (Office settings me badle ja sakte hain):
   POST forms me CSRF token, aur Hinglish text detect karta hai (non-zero exit = problem).
 
 ## Notes
-- Render free tier: 15 min idle ke baad pehli request 30–50 sec leti hai (cold start).
+- Render free tier: 15 min idle ke baad sleep. Office hours (06:30–22:25 IST) me `pg_cron` ping
+  chalne se sleep nahi hota; raat ko pehli request ~40–60 s le sakti hai.
 - DB backups: Supabase **free plan me automatic backups nahi hote**. Month-end Excel export + `pg_dump` backup lo (dekho AUDIT report).
 - Test: `python test_smoke.py` (sare pages + approve flow + report download check karta hai).

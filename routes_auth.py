@@ -89,7 +89,10 @@ def login():
         u = User.query.filter(func.lower(User.username) == username.lower()).first()
         if u and u.active and check_password_hash(u.password_hash, password):
             _clear_fails(username, ip)
+            keep = session.get("_csrf")     # keep already-open tabs working
             session.clear()                 # fresh session on login (no fixation)
+            if keep:
+                session["_csrf_prev"] = keep
             session["uid"] = u.id
             session["last_act"] = datetime.utcnow().timestamp()
             if getattr(u, "must_change_pw", False):

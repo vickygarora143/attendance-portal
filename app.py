@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """Attendance Portal — main app factory."""
+import hashlib
+import hmac
 import os
 import secrets
 from datetime import datetime
@@ -125,14 +127,30 @@ def create_app():
             now = datetime.utcnow().timestamp()
             last = session.get("last_act")
             if last and now - last > SESSION_IDLE_MINUTES * 60:
+                keep = session.get("_csrf")
                 session.clear()
-                flash("Session expired after 30 minutes of inactivity — please log in again.",
+                if keep:                    # let the already-open tab still submit
+                    session["_csrf_prev"] = keep
+                flash("Session expired after 30 minutes of inactivity - please log in again.",
                       "warning")
                 return redirect(url_for("auth.login"))
             session["last_act"] = now
 
     # ---- CSRF: one token per session, checked on every POST ----
+    def _user_csrf(uid):
+        """Token bound to the logged-in user, derived from SECRET_KEY.
+
+        Stateless on purpose: a tab that was open across a re-login, an idle
+        timeout or a session-cookie race keeps a valid token instead of showing
+        "form expired". Anonymous pages still use a random per-session token.
+        """
+        key = (app.config["SECRET_KEY"] or "").encode("utf-8")
+        return hmac.new(key, ("csrf:%s" % uid).encode("utf-8"), hashlib.sha256).hexdigest()
+
     def csrf_token():
+        uid = session.get("uid")
+        if uid:
+            return _user_csrf(uid)
         tok = session.get("_csrf")
         if not tok:
             tok = secrets.token_urlsafe(32)
@@ -148,9 +166,12 @@ def create_app():
         if app.config.get("TESTING"):        # smoke tests post forms directly
             return
         sent = request.form.get("csrf_token") or request.headers.get("X-CSRFToken", "")
-        good = session.get("_csrf")
-        if not good or not sent or not secrets.compare_digest(str(sent), str(good)):
-            flash("Your form expired for security reasons. Please try again.", "danger")
+        if session.get("uid"):
+            known = [_user_csrf(session["uid"])]      # stable per user
+        else:
+            known = [t for t in (session.get("_csrf"), session.get("_csrf_prev")) if t]
+        if not sent or not any(secrets.compare_digest(str(sent), str(t)) for t in known):
+            flash("Page was out of date - please submit again.", "warning")
             back = request.referrer or ""
             if not back.startswith(request.host_url):
                 back = url_for("auth.home")

@@ -158,7 +158,7 @@ def confirm(uid):
             if att is None:
                 db.session.add(Attendance(employee_id=emp.id, adate=d, code=code_new,
                                           in_time=iv, out_time=ov, total_hrs=tv, source="device"))
-            elif att.source != "adjust":
+            elif not att.adjusted:
                 att.code, att.in_time, att.out_time, att.total_hrs = code_new, iv, ov, tv
                 att.source = "device"
             written += 1
